@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+const withMDX = require('@next/mdx')();
 
 const nextConfig: NextConfig = {
   // Enable Cloudflare Pages compatibility
@@ -7,7 +8,9 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   experimental: {
-  }
+  },
+  // Configure pageExtensions to support MDX
+  pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
 };
 
-export default nextConfig;
+export default withMDX(nextConfig);
