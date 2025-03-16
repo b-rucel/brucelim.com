@@ -1,0 +1,107 @@
+/* Base styles for MDX content */
+.mdx-content {
+  max-width: 65ch;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  font-family: var(--font-geist-sans);
+  line-height: 1.6;
+}
+
+/* Headings */
+.mdx-content h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 2rem 0 1.5rem;
+  line-height: 1.2;
+}
+
+.mdx-content h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 1.75rem 0 1.25rem;
+}
+
+.mdx-content h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.5rem 0 1rem;
+}
+
+/* Paragraphs and lists */
+.mdx-content p {
+  margin: 1.25rem 0;
+}
+
+.mdx-content ul,
+.mdx-content ol {
+  margin: 1.25rem 0;
+  padding-left: 1.5rem;
+}
+
+.mdx-content li {
+  margin: 0.5rem 0;
+}
+
+.mdx-content ul {
+  list-style-type: disc;
+}
+
+.mdx-content ol {
+  list-style-type: decimal;
+}
+
+/* Links */
+.mdx-content a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.mdx-content a:hover {
+  color: var(--color-primary-foreground);
+}
+
+/* Code blocks */
+.mdx-content pre {
+  background: var(--color-card);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  font-family: var(--font-geist-mono);
+}
+
+.mdx-content code {
+  font-family: var(--font-geist-mono);
+  font-size: 0.9em;
+  padding: 0.2em 0.4em;
+  background: var(--color-card);
+  border-radius: 0.25rem;
+}
+
+/* Blockquotes */
+.mdx-content blockquote {
+  border-left: 4px solid var(--color-border);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: var(--color-muted-foreground);
+}
+
+/* Tables */
+.mdx-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.mdx-content th,
+.mdx-content td {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+}
+
+.mdx-content th {
+  background: var(--color-card);
+  font-weight: 600;
+}
