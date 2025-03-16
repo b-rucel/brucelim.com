@@ -61,23 +61,47 @@
   color: var(--color-primary-foreground);
 }
 
+
+
 /* Code blocks */
 .mdx-content pre {
-  background: var(--color-card);
-  padding: 1rem;
-  border-radius: 0.5rem;
+  background: rgba(210, 180, 180, 0.1);
+  padding: 1.25rem 1rem;
+  border-radius: 0.2rem;
   overflow-x: auto;
   margin: 1.5rem 0;
-  font-family: var(--font-outfit);
+  font-family: var(--font-mono);
+  border: 1px solid var(--color-border);
 }
 
 .mdx-content code {
-  font-family: var(--font-outfit);
+  font-family: var(--font-mono);
   font-size: 0.9em;
+}
+
+/* Inline code */
+.mdx-content :not(pre) > code {
   padding: 0.2em 0.4em;
   background: var(--color-card);
   border-radius: 0.25rem;
+  border: 1px solid var(--color-border);
 }
+
+/* Language badge for code blocks */
+.mdx-content pre[data-language]::before {
+  content: attr(data-language);
+  display: block;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+  font-family: var(--font-sans);
+  letter-spacing: 0.05em;
+}
+
+
+
+
 
 /* Blockquotes */
 .mdx-content blockquote {
