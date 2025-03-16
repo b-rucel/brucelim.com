@@ -1,7 +1,9 @@
+import './page.module.css';
+
 export default function Home() {
   return (
-    <div className="min-h-screen px-6 py-16 md:px-12 lg:px-24 bg-white dark:bg-black">
-      <main className="max-w-2xl mx-auto space-y-16">
+    <div className="min-h-screen px-6 py-16 md:px-12 lg:px-24 bg-white dark:bg-black bg-custom">
+      <main className="max-w-2xl mx-auto space-y-16 bg-white/50 dark:bg-black/50 backdrop-blur-sm p-8 rounded-xl">
         {/* Hero Section */}
         <section className="space-y-6">
           <div className="relative w-56 mx-auto mb-8">
@@ -56,7 +58,7 @@ export default function Home() {
           <h2 className="text-lg font-semibold">Connect</h2>
           <div className="flex space-x-6">
             <a
-              href="https://github.com/yourusername"
+              href="https://github.com/b-rucel"
               className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
               target="_blank"
               rel="noopener noreferrer"
@@ -64,7 +66,7 @@ export default function Home() {
               GitHub
             </a>
             <a
-              href="https://twitter.com/yourusername"
+              href="https://x.com/b_rucel"
               className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
               target="_blank"
               rel="noopener noreferrer"
