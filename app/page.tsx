@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function Home() {
   return (
     <div className="min-h-screen px-6 py-16 md:px-12 lg:px-24 bg-white dark:bg-black bg-custom">
@@ -5,7 +7,7 @@ export default function Home() {
         {/* Hero Section */}
         <section className="space-y-6">
           <div className="relative w-56 mx-auto mb-8">
-            <img
+            <Image
               src="/images/3d.avatar.jpg"
               alt="Bruce Lim"
               className="rounded-xl object-cover"
