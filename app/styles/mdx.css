@@ -1,10 +1,19 @@
 /* Base styles for MDX content */
 .mdx-content {
-  max-width: 65ch;
-  margin: 2rem auto;
-  padding: 0 1rem;
+  max-width: 60rem;
+  margin: 4rem auto;  /* Increased margin */
+  padding: 0 2rem;    /* Increased padding */
   font-family: var(--font-outfit);
-  line-height: 1.6;
+  line-height: 1.8;   /* Increased line height */
+}
+
+/* Add max-width for better readability */
+.mdx-content p,
+.mdx-content ul,
+.mdx-content ol {
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Headings */

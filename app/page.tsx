@@ -12,7 +12,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="max-w-2xl mx-auto space-y-16 bg-white/70 dark:bg-black/70 backdrop-blur-sm p-8 rounded-xl"
+          className="max-w-4xl mx-auto space-y-16 bg-white/70 dark:bg-black/70 backdrop-blur-sm p-8 rounded-xl"
         >
           {/* Hero Section */}
           <motion.section
@@ -27,7 +27,7 @@ export default function Home() {
               className="relative w-56 mx-auto mb-8"
             >
               <Image
-                src="/images/cool.jpg"
+                src="/images/vibing.jpg"
                 alt="Bruce Lim"
                 className="rounded-xl object-cover shadow-lg"
                 width={512}
@@ -65,7 +65,7 @@ export default function Home() {
                   <p className="text-gray-600 dark:text-gray-400">
                     Exploring MDX and Next.js, featuring markdown syntax, React components, and dynamic content rendering capabilities.
                   </p>
-                  <time className="text-sm text-gray-500 dark:text-gray-500">
+                  <time className="text-sm text-gray-500 dark:text-gray-300">
                     March 16, 2025
                   </time>
                 </a>
