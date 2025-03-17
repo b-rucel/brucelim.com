@@ -9,7 +9,7 @@ export default function BlogLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <BlogNav />
-      <main className="flex-grow">
+      <main className="flex-grow grid-background">
         {children}
       </main>
       <Footer />
