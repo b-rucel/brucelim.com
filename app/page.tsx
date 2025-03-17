@@ -27,7 +27,7 @@ export default function Home() {
               className="relative w-56 mx-auto mb-8"
             >
               <Image
-                src="/images/cool.jpg"
+                src="/images/vibing.jpg"
                 alt="Bruce Lim"
                 className="rounded-xl object-cover shadow-lg"
                 width={512}
