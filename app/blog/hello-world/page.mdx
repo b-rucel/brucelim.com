@@ -1,3 +1,6 @@
+import { CodeBlock } from '../../components/CodeBlock';
+import { highlight } from '../../shared/highlighter';
+
 # Welcome to my MDX page!
 
 This is some **bold** and _italics_ text.
@@ -8,17 +11,20 @@ This is a list in markdown:
 - Two
 - Three
 
+
 ## Task List
 
 - [x] Learn Markdown basics
 - [x] Setup Next.js with MDX
 - [ ] Master advanced MDX features
 
+
 ## Blockquotes
 
 > MDX combines the simplicity of Markdown with the power of React components.
 > 
 > — A wise developer
+
 
 ## Tables
 
@@ -28,44 +34,56 @@ This is a list in markdown:
 | React Components | ❌ | ✅ |
 | Dynamic Content | ❌ | ✅ |
 
-
 | Name                                                 | Value                     | Reference                  | Type      |
 | ---------------------------------------------------- | ------------------------- | -------------------------- | --------- |
 | button-background-color-icon-dark-backdrop-default   | rgba(0, 0, 0, 0)          | transparent                | Color     |
+
 
 ## Code Examples
 
 Here's a code block in JavaScript:
 
-```js
-const greeting = "Hello, MDX!";
-console.log(greeting);
-```
+<CodeBlock initial={
+  await highlight([
+    'const greeting = "Hello, MDX!";',
+    'console.log(greeting);',
+    '>>>',
+    'Hello, MDX!',
+  ].join('\n'), 'js')
+} />
+
 
 Python example:
 
-```python
-def greet(name):
-    return f"Hello, {name}!"
+<CodeBlock initial={
+  await highlight([
+    'def greet(name):',
+    '    return f"Hello, {name}!"',
+    '',
+    'print(greet("MDX"))',
+  ].join('\n'), 'python')
+} />
 
-print(greet("MDX"))
-```
 
 CSS styling:
 
-```css
-.mdx-content {
-    max-width: 65ch;
-    margin: 2rem auto;
-    padding: 0 1rem;
-}
-```
+<CodeBlock initial={
+  await highlight([
+    '.mdx-content {',
+    '    max-width: 65ch;',
+    '    margin: 2rem auto;',
+    '    padding: 0 1rem;',
+    '}'
+  ].join('\n'), 'css')
+} />
+
 
 ## Footnotes
 
 Here's a sentence with a footnote[^1].
 
 [^1]: This is the footnote content.
+
 
 ## Math Equations
 
@@ -80,4 +98,3 @@ f(x) = \int_{-\infty}^\infty
     \,d\xi
 $$
 ```
-
