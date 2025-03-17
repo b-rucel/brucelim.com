@@ -122,6 +122,10 @@
   }
 }
 
+body {
+  font-family: var(--font-outfit);
+}
+
 .bg-custom {
   background-image: url('/images/12b23a7752e8a7a4464c1ff5e596237f.gif');
   background-size: cover;
