@@ -1,6 +1,7 @@
 'use client'
 import { motion } from 'framer-motion';
 import CustomCursor from '@/components/CustomCursor';
+import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -25,10 +26,12 @@ export default function Home() {
               transition={{ type: "spring", stiffness: 300 }}
               className="relative w-56 mx-auto mb-8"
             >
-              <img
+              <Image
                 src="/images/cool.jpg"
                 alt="Bruce Lim"
                 className="rounded-xl object-cover shadow-lg"
+                width={512}
+                height={512}
               />
             </motion.div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
@@ -101,6 +104,6 @@ export default function Home() {
           </section>
         </motion.main>
       </div>
-    </>
+      </>
   );
 }
