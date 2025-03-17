@@ -46,7 +46,7 @@ export default function Home() {
           <section className="space-y-4">
             <h2 className="text-lg font-semibold">About</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-              I'm a software engineer based in Los Angeles. I specialize in building
+              I&apos;m a software engineer based in Los Angeles. I specialize in building
               high-quality web applications with modern technologies like React, Next.js,
               and TypeScript. Currently working on projects that push the boundaries of
               web development.
