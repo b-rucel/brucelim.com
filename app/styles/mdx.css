@@ -133,18 +133,19 @@
 .mdx-content td {
   padding: 0.75rem;
   text-align: left;
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color, #2D2B40);
 }
 
 .mdx-content th {
-  background-color: var(--background-color, #f9fafb);
+  background-color: var(--background-color, #2D2B40);
   font-weight: 600;
 }
 
 .mdx-content tr:nth-child(even) {
-  background-color: var(--background-color-alt, #f3f4f6);
+  background-color: #1E1C31;
 }
 
 .mdx-content tr:hover {
-  background-color: var(--background-color-hover, #f0f1f3);
+  background-color: #cbd5e1;
+  color: #2D2B40;
 }

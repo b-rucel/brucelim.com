@@ -1,13 +1,19 @@
 import type { NextConfig } from "next";
-const withMDX = require('@next/mdx')();
+import nextMDX from '@next/mdx';
+import remarkGfm from 'remark-gfm';
+
+const withMDX = nextMDX({
+  extension: /\.mdx?$/,
+  options: {
+    remarkPlugins: [remarkGfm],
+  }
+});
 
 const nextConfig: NextConfig = {
   // Enable Cloudflare Pages compatibility
   output: 'export',
   images: {
     unoptimized: true,
-  },
-  experimental: {
   },
   // Configure pageExtensions to support MDX
   pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
