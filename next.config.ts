@@ -10,12 +10,10 @@ const withMDX = nextMDX({
 });
 
 const nextConfig: NextConfig = {
-  // Enable Cloudflare Pages compatibility
   output: 'export',
   images: {
     unoptimized: true,
   },
-  // Configure pageExtensions to support MDX
   pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
 };
 

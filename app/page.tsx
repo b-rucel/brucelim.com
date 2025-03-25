@@ -19,7 +19,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="space-y-6"
+            className="space-y-2 mb-12"
           >
             <motion.div
               whileHover={{ scale: 1.05 }}
@@ -37,13 +37,13 @@ export default function Home() {
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
               Bruce Lim
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-400">
+            <p className="mt-2 text-xl text-gray-600 dark:text-gray-400">
               Software Engineer & Developer focused on building products that matter.
             </p>
           </motion.section>
 
           {/* About Section */}
-          <section className="space-y-4">
+          <section className="space-y-2 mb-12">
             <h2 className="text-lg font-semibold">About</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
               I&apos;m a software engineer based in Los Angeles. I specialize in building
@@ -54,9 +54,30 @@ export default function Home() {
           </section>
 
           {/* Featured Work */}
-          <section className="space-y-6">
+          <section className="space-y-2 mb-12">
             <h2 className="text-lg font-semibold">Featured Work</h2>
             <div className="space-y-8">
+
+            </div>
+          </section>
+
+          {/* Articles */}
+          <section className="space-y-2 mb-12">
+            <h2 className="text-lg font-semibold">Ramblings</h2>
+            <div className="space-y-8">
+              <article className="group">
+                <a href="/blog/digging-ssh-mastering-secure-connections" className="block space-y-2">
+                  <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                    Digging SSH: Mastering Secure Connections
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    A comprehensive guide to SSH, covering everything from basic commands to advanced configuration techniques for secure remote system administration.
+                  </p>
+                  <time className="text-sm text-gray-500 dark:text-gray-300">
+                    March 24, 2024
+                  </time>
+                </a>
+              </article>
               <article className="group">
                 <a href="/blog/hello-world" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
@@ -70,12 +91,11 @@ export default function Home() {
                   </time>
                 </a>
               </article>
-              {/* Add more articles as needed */}
             </div>
           </section>
 
           {/* Contact/Social Links */}
-          <section className="space-y-4">
+          <section className="space-y-2 mb-12">
             <h2 className="text-lg font-semibold">Connect</h2>
             <div className="flex space-x-6">
               <a
