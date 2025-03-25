@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 export default function BlogNav() {
   return (
@@ -15,6 +16,9 @@ export default function BlogNav() {
           <Link href="/" className="text-lg font-semibold hover:text-gray-600 dark:hover:text-gray-300">
             Bruce Lim
           </Link>
+          <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
+            just a random nerd <Image src="/images/stormtrooper.png" width={48} height={48} alt="Stormtrooper with heart eyes emoji" />
+          </span>
           {/*
           <div className="flex space-x-6">
             <Link href="/blog" className="hover:text-gray-600 dark:hover:text-gray-300">
