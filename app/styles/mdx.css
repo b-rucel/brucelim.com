@@ -1,22 +1,12 @@
-/* Base styles for MDX content */
+/* base styles for MDX content */
 .mdx-content {
   max-width: 60rem;
-  margin: 4rem auto;  /* Increased margin */
-  padding: 0 2rem;    /* Increased padding */
+  margin: 4rem auto;
+  padding: 0 2rem;
   font-family: var(--font-outfit);
-  line-height: 1.8;   /* Increased line height */
+  line-height: 1.8;
 }
 
-/* Add max-width for better readability */
-.mdx-content p,
-.mdx-content ul,
-.mdx-content ol {
-  max-width: 42rem;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* Headings */
 .mdx-content h1 {
   font-size: 2.5rem;
   font-weight: 700;
@@ -36,7 +26,6 @@
   margin: 1.5rem 0 1rem;
 }
 
-/* Paragraphs and lists */
 .mdx-content p {
   margin: 1.25rem 0;
 }
@@ -59,7 +48,6 @@
   list-style-type: decimal;
 }
 
-/* Links */
 .mdx-content a {
   color: var(--color-primary);
   text-decoration: underline;
@@ -70,9 +58,6 @@
   color: var(--color-primary-foreground);
 }
 
-
-
-/* Code blocks */
 .mdx-content pre {
   background: rgba(210, 180, 180, 0.1);
   padding: 1.25rem 1rem;
@@ -88,7 +73,6 @@
   font-size: 0.9em;
 }
 
-/* Inline code */
 .mdx-content :not(pre) > code {
   padding: 0.2em 0.4em;
   background: var(--color-card);
@@ -96,7 +80,6 @@
   border: 1px solid var(--color-border);
 }
 
-/* Language badge for code blocks */
 .mdx-content pre[data-language]::before {
   content: attr(data-language);
   display: block;
@@ -108,11 +91,6 @@
   letter-spacing: 0.05em;
 }
 
-
-
-
-
-/* Blockquotes */
 .mdx-content blockquote {
   border-left: 4px solid var(--color-border);
   padding-left: 1rem;
@@ -121,7 +99,6 @@
   color: var(--color-muted-foreground);
 }
 
-/* Tables */
 .mdx-content table {
   width: 100%;
   border-collapse: collapse;

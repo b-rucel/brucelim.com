@@ -1,10 +1,10 @@
 interface BlogPost {
   title: string;
   href: string;
-  date: string; // for sorting
+  date: string;
 }
 
-// Define your blog posts here in chronological order
+// need to move this out to its own file
 const blogPosts: BlogPost[] = [
   {
     title: "Hello World",
@@ -14,7 +14,7 @@ const blogPosts: BlogPost[] = [
   {
     title: "Didging SSH: Mastering Secure Connections",
     href: "/digging-ssh-mastering-secure-connections",
-    date: "2024-03-17"
+    date: "2024-03-24"
   },
   // Add more posts as you create them
 ];
