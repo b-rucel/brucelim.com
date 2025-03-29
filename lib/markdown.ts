@@ -12,7 +12,7 @@ const blogPosts: BlogPost[] = [
     date: "2024-03-16"
   },
   {
-    title: "Didging SSH: Mastering Secure Connections",
+    title: "Digging SSH: Mastering Secure Connections",
     href: "/digging-ssh-mastering-secure-connections",
     date: "2024-03-24"
   },
