@@ -16,6 +16,11 @@ const blogPosts: BlogPost[] = [
     href: "/digging-ssh-mastering-secure-connections",
     date: "2024-03-24"
   },
+  {
+    title: "3D Airplane Demo with React and Three.js",
+    href: "/plane-demo",
+    date: "2024-03-28"
+  },
   // Add more posts as you create them
 ];
 
