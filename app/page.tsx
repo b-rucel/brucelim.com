@@ -126,10 +126,10 @@ export default function Home() {
                 <article className="group">
                 <a href="/blog/threejs-plane-demo" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
-                  Three.js Plane Demo: Creating Interactive 3D Experiences
+                  Three.js Plane Demo: Creating a 3D Experience
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                  Building an interactive 3D plane with Three.js, covering geometry, materials, animations, and user interactions.
+                  Building a 3D plane with Three.js, covering geometry, materials, animations, and user interactions.
                   </p>
                   <time className="text-sm text-gray-500 dark:text-gray-300">
                   March 28, 2024

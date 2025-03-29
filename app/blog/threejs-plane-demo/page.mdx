@@ -1,5 +1,129 @@
 # 3D Airplane Demo with React and Three.js
 
+<a href="https://tympanus.net/codrops/2016/04/26/the-aviator-animating-basic-3d-scene-threejs/" target="_blank">
+Codrops Article
+</a>
+
 import PlaneDemo from '@/components/PlaneDemo';
 
 <PlaneDemo />
+
+This interactive 3D scene demonstrates the power of Three.js integrated with React. The demo features a stylized airplane flying above a rotating sea, surrounded by drifting clouds in a dynamic sky environment.
+
+## Key Features
+
+- **Responsive Design**: The scene automatically adjusts to your screen size while maintaining proper proportions
+- **Interactive Elements**: Toggle fullscreen mode for an immersive experience
+- **Dynamic Animation**: Watch the propeller spin and clouds drift through the sky
+- **Real-time Rendering**: Smooth performance with WebGL rendering
+- **Shadow Effects**: Realistic shadows cast by the airplane and clouds
+
+## Technical Implementation
+
+The demo is built using:
+- React for component management and state handling
+- Three.js for 3D rendering and animations
+- Tailwind CSS for styling and responsive design
+
+Each element in the scene is carefully crafted using Three.js geometries:
+- The airplane consists of multiple BoxGeometry instances combined into a complex shape
+- Clouds are generated randomly using clustered cubes
+- The sea is represented by a modified cylinder with custom material properties
+
+The scene maintains performance through:
+- Efficient cleanup of event listeners and WebGL context
+- Proper disposal of Three.js resources
+- Optimized render loop with requestAnimationFrame
+
+Try toggling fullscreen mode using the button in the bottom-right corner!
+
+## Code Implementation
+
+Let's break down the key parts of our PlaneDemo component:
+
+```javascript
+const PlaneDemo = () => {
+  // Track container dimensions for responsive rendering
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  // Handle viewport updates
+  useEffect(() => {
+    const updateDimensions = () => {
+      const container = containerRef.current;
+      const rect = container.getBoundingClientRect();
+      setDimensions({
+        width: rect.width,
+        height: rect.height
+      });
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+}
+```
+
+The component uses React's `useEffect` hook to manage the Three.js scene lifecycle:
+
+```javascript
+useEffect(() => {
+  // Scene setup
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0xf7d9aa, 100, 950);
+
+  // Create and position the camera
+  const camera = new THREE.PerspectiveCamera(60, width / height, 1, 10000);
+  camera.position.set(0, 100, 200);
+
+  // Add dynamic lighting
+  const hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, .9);
+  const shadowLight = new THREE.DirectionalLight(0xffffff, .9);
+  shadowLight.position.set(150, 350, 350);
+
+  // Animation loop
+  function loop() {
+    airplane.propeller.rotation.x += 0.3;
+    sea.mesh.rotation.z += .005;
+    sky.mesh.rotation.z += .01;
+    renderer.render(scene, camera);
+    requestAnimationFrame(loop);
+  }
+}, [dimensions]);
+```
+
+### Key Technical Points:
+
+1. **Aircraft Construction**:
+   - Built using composite BoxGeometry shapes
+   - Main cockpit uses a custom material with `flatShading` enabled
+   - Propeller animation achieved through continuous rotation updates
+   - Shadow casting and receiving enabled on all aircraft components
+
+2. **Cloud System**:
+   - Each cloud composed of multiple merged cube geometries
+   - Random scaling and positioning for natural variation
+   - Distributed in a circular pattern around the scene
+   - Semi-transparent materials for soft appearance
+
+3. **Sea Environment**:
+   - Uses CylinderGeometry rotated 90 degrees as the base
+   - Custom material with wave-like animation
+   - Continuous rotation for dynamic water movement
+   - Extended boundaries to create horizon effect
+
+4. **Lighting Setup**:
+   - Hemisphere light for ambient illumination
+   - Directional light for shadow casting
+   - Shadow mapping enabled with optimized resolution
+   - Strategic light positioning for dramatic effects
+
+5. **Animation System**:
+   - Propeller rotation at constant speed
+   - Sea surface gentle rolling motion
+   - Sky rotation for cloud movement
+   - Synchronized using requestAnimationFrame
+
+The demo showcases how Three.js geometries and materials can be combined to create a cohesive, animated 3D environment.
+
+The demo combines React's component lifecycle management with Three.js's powerful 3D rendering capabilities, resulting in a performant and maintainable 3D scene.
