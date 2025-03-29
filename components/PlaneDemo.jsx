@@ -5,11 +5,30 @@ import * as THREE from 'three';
 export default function PlaneDemo() {
   const containerRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
-  
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  // Update dimensions based on container size
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateDimensions = () => {
+      const container = containerRef.current;
+      const rect = container.getBoundingClientRect();
+      setDimensions({
+        width: rect.width,
+        height: rect.height
+      });
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+
   // Consolidated dimensions configuration
   const viewport = {
-    width: 900,
-    height: 600,
+    width: dimensions.width,
+    height: dimensions.height,
     camera: {
       fov: 60,
       near: 1,
@@ -20,7 +39,7 @@ export default function PlaneDemo() {
 
   useEffect(() => {
     if (!containerRef.current) return;
-    
+
     // Colors
     const Colors = {
       red: 0xf25346,
@@ -39,7 +58,7 @@ export default function PlaneDemo() {
       // Create the scene
       scene = new THREE.Scene();
       scene.fog = new THREE.Fog(0xf7d9aa, 100, 950);
-      
+
       // Create the camera using viewport config
       const aspectRatio = viewport.width / viewport.height;
       camera = new THREE.PerspectiveCamera(
@@ -48,23 +67,23 @@ export default function PlaneDemo() {
         viewport.camera.near,
         viewport.camera.far
       );
-      
+
       // Set camera position from config
       camera.position.set(
         viewport.camera.position.x,
         viewport.camera.position.y,
         viewport.camera.position.z
       );
-      
+
       // Create the renderer
-      renderer = new THREE.WebGLRenderer({ 
+      renderer = new THREE.WebGLRenderer({
         alpha: true,
-        antialias: true 
+        antialias: true
       });
-      
+
       renderer.setSize(viewport.width, viewport.height);
       renderer.shadowMap.enabled = true;
-      
+
       containerRef.current.appendChild(renderer.domElement);
       window.addEventListener('resize', handleWindowResize);
     }
@@ -77,22 +96,22 @@ export default function PlaneDemo() {
 
     function createLights() {
       hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, .9);
-      
+
       shadowLight = new THREE.DirectionalLight(0xffffff, .9);
       shadowLight.position.set(150, 350, 350);
       shadowLight.castShadow = true;
-      
+
       shadowLight.shadow.camera.left = -400;
       shadowLight.shadow.camera.right = 400;
       shadowLight.shadow.camera.top = 400;
       shadowLight.shadow.camera.bottom = -400;
       shadowLight.shadow.camera.near = 1;
       shadowLight.shadow.camera.far = 1000;
-      
+
       shadowLight.shadow.mapSize.width = 2048;
       shadowLight.shadow.mapSize.height = 2048;
-      
-      scene.add(hemisphereLight);  
+
+      scene.add(hemisphereLight);
       scene.add(shadowLight);
     }
 
@@ -101,14 +120,14 @@ export default function PlaneDemo() {
       constructor() {
         const geom = new THREE.CylinderGeometry(600, 600, 800, 40, 10);
         geom.applyMatrix4(new THREE.Matrix4().makeRotationX(-Math.PI/2));
-        
+
         const mat = new THREE.MeshPhongMaterial({
           color: Colors.blue,
           transparent: true,
           opacity: .6,
           flatShading: true,
         });
-        
+
         this.mesh = new THREE.Mesh(geom, mat);
         this.mesh.receiveShadow = true;
       }
@@ -124,28 +143,28 @@ export default function PlaneDemo() {
     class Cloud {
       constructor() {
         this.mesh = new THREE.Object3D();
-        
+
         const geom = new THREE.BoxGeometry(20, 20, 20);
         const mat = new THREE.MeshPhongMaterial({
           color: Colors.white,
         });
-        
+
         const nBlocs = 3 + Math.floor(Math.random() * 3);
         for (let i = 0; i < nBlocs; i++) {
           const m = new THREE.Mesh(geom, mat);
-          
+
           m.position.x = i * 15;
           m.position.y = Math.random() * 10;
           m.position.z = Math.random() * 10;
           m.rotation.z = Math.random() * Math.PI * 2;
           m.rotation.y = Math.random() * Math.PI * 2;
-          
+
           const s = .1 + Math.random() * .9;
           m.scale.set(s, s, s);
-          
+
           m.castShadow = true;
           m.receiveShadow = true;
-          
+
           this.mesh.add(m);
         }
       }
@@ -156,23 +175,23 @@ export default function PlaneDemo() {
       constructor() {
         this.mesh = new THREE.Object3D();
         this.nClouds = 20;
-        
+
         const stepAngle = Math.PI * 2 / this.nClouds;
-        
+
         for (let i = 0; i < this.nClouds; i++) {
           const c = new Cloud();
-          
+
           const a = stepAngle * i;
           const h = 750 + Math.random() * 200;
-          
+
           c.mesh.position.y = Math.sin(a) * h;
           c.mesh.position.x = Math.cos(a) * h;
           c.mesh.rotation.z = a + Math.PI / 2;
           c.mesh.position.z = -400 - Math.random() * 400;
-          
+
           const s = 1 + Math.random() * 2;
           c.mesh.scale.set(s, s, s);
-          
+
           this.mesh.add(c.mesh);
         }
       }
@@ -188,7 +207,7 @@ export default function PlaneDemo() {
     class AirPlane {
       constructor() {
         this.mesh = new THREE.Object3D();
-        
+
         // Cockpit
         const geomCockpit = new THREE.BoxGeometry(60, 50, 50, 1, 1, 1);
         const matCockpit = new THREE.MeshPhongMaterial({
@@ -199,7 +218,7 @@ export default function PlaneDemo() {
         cockpit.castShadow = true;
         cockpit.receiveShadow = true;
         this.mesh.add(cockpit);
-        
+
         // Engine
         const geomEngine = new THREE.BoxGeometry(20, 50, 50, 1, 1, 1);
         const matEngine = new THREE.MeshPhongMaterial({
@@ -211,7 +230,7 @@ export default function PlaneDemo() {
         engine.castShadow = true;
         engine.receiveShadow = true;
         this.mesh.add(engine);
-        
+
         // Tail
         const geomTailPlane = new THREE.BoxGeometry(15, 20, 5, 1, 1, 1);
         const matTailPlane = new THREE.MeshPhongMaterial({
@@ -223,7 +242,7 @@ export default function PlaneDemo() {
         tailPlane.castShadow = true;
         tailPlane.receiveShadow = true;
         this.mesh.add(tailPlane);
-        
+
         // Wing
         const geomSideWing = new THREE.BoxGeometry(40, 8, 150, 1, 1, 1);
         const matSideWing = new THREE.MeshPhongMaterial({
@@ -234,7 +253,7 @@ export default function PlaneDemo() {
         sideWing.castShadow = true;
         sideWing.receiveShadow = true;
         this.mesh.add(sideWing);
-        
+
         // Propeller
         const geomPropeller = new THREE.BoxGeometry(20, 10, 10, 1, 1, 1);
         const matPropeller = new THREE.MeshPhongMaterial({
@@ -244,14 +263,14 @@ export default function PlaneDemo() {
         this.propeller = new THREE.Mesh(geomPropeller, matPropeller);
         this.propeller.castShadow = true;
         this.propeller.receiveShadow = true;
-        
+
         // Blades
         const geomBlade = new THREE.BoxGeometry(1, 100, 20, 1, 1, 1);
         const matBlade = new THREE.MeshPhongMaterial({
           color: Colors.brownDark,
           flatShading: true
         });
-        
+
         const blade = new THREE.Mesh(geomBlade, matBlade);
         blade.position.set(8, 0, 0);
         blade.castShadow = true;
@@ -273,7 +292,7 @@ export default function PlaneDemo() {
       airplane.propeller.rotation.x += 0.3;
       sea.mesh.rotation.z += .005;
       sky.mesh.rotation.z += .01;
-      
+
       renderer.render(scene, camera);
       requestAnimationFrame(loop);
     }
@@ -302,18 +321,11 @@ export default function PlaneDemo() {
 
   return (
     <div className="plane-demo">
-      <div 
-        ref={containerRef} 
-        style={{ 
-          position: 'relative',
-          width: `${viewport.width}px`,
-          height: `${viewport.height}px`,
-          overflow: 'hidden',
-          background: 'linear-gradient(#7dcbff, #f7d9aa)',
-          margin: '0 auto'
-        }}
+      <div
+        ref={containerRef}
+        className="rounded relative w-full h-[600px] overflow-hidden bg-gradient-to-b from-[#7dcbff] to-[#f7d9aa] mx-auto"
       />
-      {!loaded && <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white' }}>Loading...</div>}
+      {!loaded && <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white">Loading...</div>}
     </div>
   );
 }

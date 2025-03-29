@@ -18,7 +18,7 @@ const blogPosts: BlogPost[] = [
   },
   {
     title: "3D Airplane Demo with React and Three.js",
-    href: "/plane-demo",
+    href: "/threejs-plane-demo",
     date: "2024-03-28"
   },
   // Add more posts as you create them
