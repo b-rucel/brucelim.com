@@ -57,9 +57,9 @@ export default function Home() {
           <section className="space-y-2 mb-12">
             <h2 className="text-lg font-semibold">Featured Work</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <article className="group">
+              <article className="group mb-8">
                 <a href="https://nextbase.pages.dev" target="_blank" rel="noopener noreferrer" className="block">
-                  <div className="overflow-hidden rounded-lg h-48">
+                  <div className="overflow-hidden rounded-lg md:h-48">
                     <motion.div
                       whileHover={{ scale: 1.05 }}
                       transition={{ type: "spring", stiffness: 300 }}
@@ -87,9 +87,9 @@ export default function Home() {
                 </a>
               </article>
 
-              <article className="group">
+              <article className="group mb-8">
                 <a href="https://artoo.pages.dev" target="_blank" rel="noopener noreferrer" className="block">
-                  <div className="overflow-hidden rounded-lg h-48">
+                  <div className="overflow-hidden rounded-lg md:h-48">
                     <motion.div
                       whileHover={{ scale: 1.05 }}
                       transition={{ type: "spring", stiffness: 300 }}
