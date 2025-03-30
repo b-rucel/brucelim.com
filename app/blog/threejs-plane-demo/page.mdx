@@ -1,6 +1,9 @@
+import { CodeBlock } from '@/components/CodeBlock';
+import { highlight } from '@/lib/highlighter';
+
 # 3D Airplane Demo with React and Three.js
 
-<a href="https://tympanus.net/codrops/2016/04/26/the-aviator-animating-basic-3d-scene-threejs/" target="_blank">
+<a className="w-fit block" href="https://tympanus.net/codrops/2016/04/26/the-aviator-animating-basic-3d-scene-threejs/" target="_blank">
 Codrops Article
 </a>
 
@@ -10,5 +13,49 @@ import PlaneDemo from '@/components/PlaneDemo';
 
 This is a cool demo I first saw on Codrops blogs many many years ago, thought it would be fun to implement it as a react nextjs component. The demo features a stylized airplane flying above a rotating sea, surrounded by drifting clouds in a dynamic sky environment.
 
+####
 
+<CodeBlock initial={
+  await highlight([
+    'components/PlaneDemo',
+    '├── classes',
+    '│   ├── Airplane.js',
+    '│   ├── Cloud.js',
+    '│   ├── Sea.js',
+    '│   └── Sky.js',
+    '├── constants',
+    '│   └── colors.js',
+    '├── index.jsx',
+    '└── utils',
+    '    └── scene.js',
+  ].join('\n'), 'js')
+} />
 
+## Original Demo
+
+The original Codrops demo creates a 3D scene using Three.js with several key components:
+
+- A low-poly airplane that responds to mouse/touch input
+- An animated sea with waves
+- A sky populated with drifting clouds
+- Atmospheric lighting with a hemisphere light for ambient illumination and directional light for shadows
+
+The scene is rendered in a continuous loop that:
+1. Updates the sea's waves by rotating its mesh
+2. Moves clouds across the sky
+3. Adjusts the airplane's position and rotation based on user input
+4. Animates the propeller by continuously rotating it
+
+## React Implementation
+
+While the core Three.js functionality remains the same, I've restructured the demo to work within React's component model:
+
+- Each 3D object (Airplane, Cloud, Sea, Sky) is encapsulated in its own class under `/classes`
+- Scene setup and animation loop logic is abstracted into `/utils/scene.js`
+- Colors are maintained as constants in `/constants/colors.js`
+- The main component in `index.jsx` handles:
+  - Component lifecycle (mounting/unmounting)
+  - Event listeners for window resize and mouse/touch input
+  - Canvas rendering and animation frame management
+
+This modular structure makes the code more maintainable and reusable, while still preserving the original demo's visual appeal and interactivity.
