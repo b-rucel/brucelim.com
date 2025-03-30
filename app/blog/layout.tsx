@@ -1,6 +1,6 @@
 import BlogNav from '@/components/BlogNav';
 import Footer from '@/components/Footer';
-import BlogPagination from '../components/BlogPagination';
+import BlogPagination from '@/components/BlogPagination';
 
 export default function BlogLayout({
   children,
