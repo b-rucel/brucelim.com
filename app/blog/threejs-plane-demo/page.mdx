@@ -59,3 +59,70 @@ While the core Three.js functionality remains the same, I've restructured the de
   - Canvas rendering and animation frame management
 
 This modular structure makes the code more maintainable and reusable, while still preserving the original demo's visual appeal and interactivity.
+
+## Viewport and Resize Handling
+
+The demo needs to be responsive and handle window resizing gracefully. This is managed through a combination of React hooks and Three.js viewport calculations:
+
+```typescript
+const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+const viewport = {
+  width: dimensions.width,
+  height: dimensions.height,
+  camera: {
+    fov: 60,
+    near: 1,
+    far: 10000,
+    position: { x: 0, y: 100, z: 200 }
+  }
+};
+
+// Update dimensions when container size changes
+useEffect(() => {
+  if (!containerRef.current) return;
+
+  const updateDimensions = () => {
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
+    setDimensions({
+      width: rect.width,
+      height: rect.height
+    });
+  };
+
+  updateDimensions();
+  window.addEventListener('resize', updateDimensions);
+  return () => window.removeEventListener('resize', updateDimensions);
+}, []);
+
+// Update renderer and camera when viewport changes
+useEffect(() => {
+  // ...scene setup code...
+
+  const handleResize = () => {
+    renderer.setSize(viewport.width, viewport.height);
+    camera.aspect = viewport.width / viewport.height;
+    camera.updateProjectionMatrix();
+  };
+
+  window.addEventListener('resize', handleResize);
+  
+  return () => {
+    window.removeEventListener('resize', handleResize);
+    if (containerRef.current) {
+      containerRef.current.removeChild(renderer.domElement);
+    }
+    renderer.dispose();
+  };
+}, [viewport]);
+```
+
+Key aspects of the viewport handling:
+
+1. **Dimension State**: Using React's `useState` to track container dimensions.
+2. **Viewport Config**: A configuration object that combines dimensions with camera settings.
+3. **Resize Observer**: Using `getBoundingClientRect()` to accurately measure the container.
+4. **Cleanup**: Proper cleanup of event listeners and Three.js resources.
+
+This setup ensures the demo remains responsive and properly scaled across different screen sizes and window resizing events.
