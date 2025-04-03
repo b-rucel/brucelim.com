@@ -12,7 +12,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="max-w-4xl mx-auto space-y-16 bg-white/70 dark:bg-black/70 backdrop-blur-sm p-8 rounded-xl"
+          className="max-w-4xl mx-auto space-y-16 bg-white/70 dark:bg-black/70 backdrop-blur-sm p-8 rounded-sm"
         >
           {/* Hero Section */}
           <motion.section
@@ -29,7 +29,7 @@ export default function Home() {
               <Image
                 src="/images/vibing.jpg"
                 alt="Bruce Lim"
-                className="rounded-xl object-cover shadow-lg"
+                className="rounded-sm object-cover shadow-lg"
                 width={512}
                 height={512}
               />
@@ -59,7 +59,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <article className="group mb-8">
                 <a href="https://nextbase.pages.dev" target="_blank" rel="noopener noreferrer" className="block">
-                  <div className="overflow-hidden rounded-lg md:h-48">
+                  <div className="overflow-hidden rounded-sm md:h-48">
                     <motion.div
                       whileHover={{ scale: 1.05 }}
                       transition={{ type: "spring", stiffness: 300 }}
@@ -89,7 +89,7 @@ export default function Home() {
 
               <article className="group mb-8">
                 <a href="https://artoo.pages.dev" target="_blank" rel="noopener noreferrer" className="block">
-                  <div className="overflow-hidden rounded-lg md:h-48">
+                  <div className="overflow-hidden rounded-sm md:h-48">
                     <motion.div
                       whileHover={{ scale: 1.05 }}
                       transition={{ type: "spring", stiffness: 300 }}
