@@ -38,7 +38,7 @@ export default function Home() {
               Bruce Lim
             </h1>
             <p className="mt-2 text-xl text-gray-600 dark:text-gray-400">
-              Software Engineer & Developer focused on building products that matter.
+              Software Engineer & Developer focused on building elegant, performant, and user-centric web experiences.
             </p>
           </motion.section>
 
@@ -48,8 +48,8 @@ export default function Home() {
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
               I&apos;m a software engineer based in Los Angeles. I specialize in building
               high-quality web applications with modern technologies like React, Next.js,
-              and TypeScript. Currently working on projects that push the boundaries of
-              web development.
+              and TypeScript. Currently exploring the intersection of web technologies
+              and game development while building immersive applications.
             </p>
           </section>
 

@@ -21,7 +21,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        <GoogleAnalytics measurementId="G-GDLTB1K7CS" />
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+        {(typeof window === 'undefined' || (
+          window.location.hostname === 'localhost' ||
+          window.location.hostname.endsWith('.pages.dev')
+        )) ? <></> : <GoogleAnalytics measurementId="G-GDLTB1K7CS" /> }
       </head>
       <body className={`${outfit.variable} antialiased`}>
         {children}
