@@ -60,7 +60,7 @@
 
 .mdx-content pre {
   background: rgba(210, 180, 180, 0.1);
-  padding: 1.25rem 1rem;
+  /* padding: 1.25rem 1rem; */
   border-radius: 0.2rem;
   overflow-x: auto;
   margin: 1.5rem 0;
