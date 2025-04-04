@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import GoogleAnalytics from '@/components/GoogleAnalytics';
+import 'highlight.js/styles/github-dark.css';
 
 const outfit = Outfit({
   subsets: ["latin"],

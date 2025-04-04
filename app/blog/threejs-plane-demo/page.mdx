@@ -1,6 +1,3 @@
-import { CodeBlock } from '@/components/CodeBlock';
-import { highlight } from '@/lib/highlighter';
-
 # 3D Airplane Demo with React and Three.js
 
 <a className="w-fit block" href="https://tympanus.net/codrops/2016/04/26/the-aviator-animating-basic-3d-scene-threejs/" target="_blank">
@@ -15,21 +12,19 @@ This is a cool demo I first saw on Codrops blogs many many years ago, thought it
 
 ####
 
-<CodeBlock initial={
-  await highlight([
-    'components/PlaneDemo',
-    '├── classes',
-    '│   ├── Airplane.js',
-    '│   ├── Cloud.js',
-    '│   ├── Sea.js',
-    '│   └── Sky.js',
-    '├── constants',
-    '│   └── colors.js',
-    '├── index.jsx',
-    '└── utils',
-    '    └── scene.js',
-  ].join('\n'), 'js')
-} />
+```bash
+components/PlaneDemo
+├── classes
+│   ├── Airplane.js
+│   ├── Cloud.js
+│   ├── Sea.js
+│   └── Sky.js
+├── constants
+│   └── colors.js
+├── index.jsx
+└── utils
+    └── scene.js
+```
 
 ## Original Demo
 
@@ -64,7 +59,7 @@ This modular structure makes the code more maintainable and reusable, while stil
 
 The demo needs to be responsive and handle window resizing gracefully. This is managed through a combination of React hooks and Three.js viewport calculations:
 
-```typescript
+```js
 const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
 const viewport = {

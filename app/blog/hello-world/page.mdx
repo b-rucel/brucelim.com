@@ -43,39 +43,32 @@ This is a list in markdown:
 
 Here's a code block in JavaScript:
 
-<CodeBlock initial={
-  await highlight([
-    'const greeting = "Hello, MDX!";',
-    'console.log(greeting);',
-    '>>>',
-    'Hello, MDX!',
-  ].join('\n'), 'js')
-} />
+```javascript
+const greeting = "Hello, MDX!";
+console.log(greeting);
+>>>
+Hello, MDX!
+```
 
 
 Python example:
 
-<CodeBlock initial={
-  await highlight([
-    'def greet(name):',
-    '    return f"Hello, {name}!"',
-    '',
-    'print(greet("MDX"))',
-  ].join('\n'), 'python')
-} />
+```python
+def greet(name):
+    return f"Hello, {name}!"
 
+print(greet("MDX"))
+```
 
 CSS styling:
 
-<CodeBlock initial={
-  await highlight([
-    '.mdx-content {',
-    '    max-width: 65ch;',
-    '    margin: 2rem auto;',
-    '    padding: 0 1rem;',
-    '}'
-  ].join('\n'), 'css')
-} />
+```css
+.mdx-content {
+    max-width: 65ch;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+```
 
 
 ## Footnotes
