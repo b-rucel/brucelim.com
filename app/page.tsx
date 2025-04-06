@@ -123,7 +123,20 @@ export default function Home() {
           <section className="space-y-2 mb-12">
             <h2 className="text-lg font-semibold">Ramblings</h2>
             <div className="space-y-8">
-                <article className="group">
+              <article className="group">
+                <a href="/blog/launch-your-website-using-cloudflare-pages" className="block space-y-2">
+                  <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                    Launch Your Website Using Cloudflare Pages
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    A step-by-step guide to deploying your website using Cloudflare Pages, covering configuration, continuous deployment, and custom domains.
+                  </p>
+                  <time className="text-sm text-gray-500 dark:text-gray-300">
+                  April 05, 2025
+                  </time>
+                </a>
+              </article>
+              <article className="group">
                 <a href="/blog/threejs-plane-demo" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                   Three.js Plane Demo: Creating a 3D Experience
@@ -132,10 +145,10 @@ export default function Home() {
                   Building a 3D plane with Three.js, covering geometry, materials, animations, and user interactions.
                   </p>
                   <time className="text-sm text-gray-500 dark:text-gray-300">
-                  March 28, 2024
+                  March 28, 2025
                   </time>
                 </a>
-                </article>
+              </article>
               <article className="group">
                 <a href="/blog/digging-ssh-mastering-secure-connections" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
@@ -145,7 +158,7 @@ export default function Home() {
                     A comprehensive guide to SSH, covering everything from basic commands to advanced configuration techniques for secure remote system administration.
                   </p>
                   <time className="text-sm text-gray-500 dark:text-gray-300">
-                    March 24, 2024
+                    March 24, 2025
                   </time>
                 </a>
               </article>
