@@ -23,7 +23,7 @@ const blogPosts: BlogPost[] = [
   },
   {
     title: "Launch Your Website Using Cloudflare Pages",
-    href: "/launch-your-website-using-cloudflare-pages/page.mdx",
+    href: "/launch-your-website-using-cloudflare-pages",
     date: "2024-04-05"
   },
   // Add more posts as you create them
