@@ -2,6 +2,13 @@
 
 import { useEffect } from 'react';
 
+type GTagEvent = {
+  action: string;
+  category: string;
+  label: string;
+  value: number;
+};
+
 export default function GoogleAnalytics({ measurementId }: { measurementId: string }) {
   useEffect(() => {
     if (
@@ -13,14 +20,13 @@ export default function GoogleAnalytics({ measurementId }: { measurementId: stri
       return;
     }
 
-    // Load the Google Analytics script
     const script = document.createElement('script');
     script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
     script.async = true;
 
     script.onload = () => {
       window.dataLayer = window.dataLayer || [];
-      function gtag(...args: any[]) {
+      function gtag(...args: [string, Date | string | GTagEvent, ...unknown[]]) {
         window.dataLayer.push(args);
       }
       gtag('js', new Date());
