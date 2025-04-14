@@ -25,7 +25,7 @@ const blogPosts: BlogPost[] = [
     title: "Launch Your Website Using Cloudflare Pages",
     href: "/launch-your-website-using-cloudflare-pages",
     date: "2025-04-05"
-  }
+  },
   {
     title: "My Thoughts on Vibe Coding",
     href: "/my-thoughts-on-vibe-coding",

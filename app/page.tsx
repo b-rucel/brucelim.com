@@ -129,7 +129,7 @@ export default function Home() {
                     My Thoughts on Vibe Coding
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Vibe Coding, it's all the rage lately.
+                    Vibe Coding, it&apos;s all the rage lately.
                   </p>
                   <time className="text-sm text-gray-500 dark:text-gray-300">
                   April 13, 2025
