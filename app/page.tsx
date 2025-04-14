@@ -124,7 +124,7 @@ export default function Home() {
             <h2 className="text-lg font-semibold">Ramblings</h2>
             <div className="space-y-8">
               <article className="group">
-                <a href="/blog/launch-your-website-using-cloudflare-pages" className="block space-y-2">
+                <a href="/blog/my-thoughts-on-vibe-coding" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                     My Thoughts on Vibe Coding
                   </h3>
