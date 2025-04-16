@@ -58,6 +58,66 @@ export default function Home() {
             <h2 className="text-lg font-semibold">Featured Work</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <article className="group mb-8">
+                <a href="https://promptgenius.net" target="_blank" rel="noopener noreferrer" className="block">
+                  <div className="overflow-hidden rounded-sm md:h-48">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <Image
+                        src="/images/promptgenius.webp"
+                        alt="Prompt Genius"
+                        width={400}
+                        height={300}
+                        className="object-cover w-full h-full"
+                      />
+                    </motion.div>
+                  </div>
+                  <div className="mt-4">
+                    <h3 className="text-lg font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                      Prompt Genius
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">
+                    Explore curated collections of prompts for ChatGPT, Midjourney, and more. Learn about Cursor rules and MCP Servers to aid your prompts. Find the perfect tools to enhance your AI workflows and boost productivity.
+                    </p>
+                    <div className="flex items-center space-x-4 mt-2">
+                      <span className="text-sm text-gray-500">Next.js, TypeScript, Tailwind</span>
+                    </div>
+                  </div>
+                </a>
+              </article>
+
+              <article className="group mb-8">
+                <a href="https://artoo.pages.dev" target="_blank" rel="noopener noreferrer" className="block">
+                  <div className="overflow-hidden rounded-sm md:h-48">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <Image
+                        src="/images/artoo.webp"
+                        alt="Artoo Preview"
+                        width={400}
+                        height={300}
+                        className="object-cover w-full h-full"
+                      />
+                    </motion.div>
+                  </div>
+                  <div className="mt-4">
+                    <h3 className="text-lg font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                      Artoo
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">
+                      A modern file management system with intuitive interface and real-time updates.
+                    </p>
+                    <div className="flex items-center space-x-4 mt-2">
+                      <span className="text-sm text-gray-500">React, TypeScript, Tailwind</span>
+                    </div>
+                  </div>
+                </a>
+              </article>
+
+              <article className="group mb-8">
                 <a href="https://nextbase.pages.dev" target="_blank" rel="noopener noreferrer" className="block">
                   <div className="overflow-hidden rounded-sm md:h-48">
                     <motion.div
@@ -82,36 +142,6 @@ export default function Home() {
                     </p>
                     <div className="flex items-center space-x-4 mt-2">
                       <span className="text-sm text-gray-500">Next.js, TypeScript, Tailwind</span>
-                    </div>
-                  </div>
-                </a>
-              </article>
-
-              <article className="group mb-8">
-                <a href="https://artoo.pages.dev" target="_blank" rel="noopener noreferrer" className="block">
-                  <div className="overflow-hidden rounded-sm md:h-48">
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ type: "spring", stiffness: 300 }}
-                    >
-                      <Image
-                        src="/images/artoo.png"
-                        alt="Artoo Preview"
-                        width={400}
-                        height={300}
-                        className="object-cover w-full h-full"
-                      />
-                    </motion.div>
-                  </div>
-                  <div className="mt-4">
-                    <h3 className="text-lg font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
-                      Artoo
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">
-                      A modern file management system with intuitive interface and real-time updates.
-                    </p>
-                    <div className="flex items-center space-x-4 mt-2">
-                      <span className="text-sm text-gray-500">React, TypeScript, Tailwind</span>
                     </div>
                   </div>
                 </a>
