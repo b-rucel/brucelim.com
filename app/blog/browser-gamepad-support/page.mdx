@@ -1,0 +1,23 @@
+# Browser Gamepad Support
+
+<div className="flex justify-center items-center my-12">
+  <img 
+    src="/images/blog/browser-gamepad-support/gamepad.webp"
+    alt="Playstation Controller"
+    className="mx-auto"
+  />
+</div>
+
+Gaming on the web has come a long way since the early days of Flash games. Modern browsers now support powerful HTML5 features that enable rich, interactive gaming experiences comparable to native applications. One crucial aspect of gaming is controller support - the ability to use physical gamepads and controllers to interact with web games.
+
+The Gamepad API is a web standard that enables browsers to communicate with gaming controllers and input devices. It offers broad compatibility across modern browsers (Chrome, Firefox, Safari, Edge) and supports a wide range of controllers including Xbox, PlayStation, Nintendo Switch Pro controllers, and various third-party gamepads.
+
+In this post, we'll explore the Browser Gamepad API, which allows web developers to integrate gamepad support into their applications. We'll look at how to detect connected controllers, read input states, and respond to button presses and analog stick movements. Whether you're building a retro-style platformer or a modern 3D game, adding gamepad support can greatly enhance the player experience.
+
+<div className="border rounded-md px-5 pb-0.5 my-8 text-sm tracking-wide dark:bg-[#386641] bg-green-100 border-green-200 dark:border-green-900"><p className="font-bold -mb-2.5">MDN Documentation: gamepadconnected event</p> <p>https://developer.mozilla.org/en-US/docs/Web/API/Window/gamepadconnected_event</p></div>
+
+When a controller is connected via USB or Bluetooth, browsers can detect and interact with it through the Gamepad API. The focused page receives a `gamepadconnected` event for new connections, but for controllers that are already connected when the page loads, the event only fires after the user interacts with the controller - either by pressing a button or moving an axis.
+
+
+
+

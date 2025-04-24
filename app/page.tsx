@@ -38,13 +38,13 @@ export default function Home() {
               Bruce Lim
             </h1>
             <p className="mt-2 text-xl text-gray-600 dark:text-gray-400">
-              Software Engineer & Developer focused on building elegant, performant, and user-centric web experiences.
+              Software Engineer & Retro video game nerd focused on building elegant, performant, and user-centric web experiences.
             </p>
           </motion.section>
 
           {/* About Section */}
           <section className="space-y-2 mb-12">
-            <h2 className="text-lg font-semibold">About</h2>
+            <h2 className="text-lg font-semibold">About me</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
               I&apos;m a software engineer based in Los Angeles. I specialize in building
               high-quality web applications with modern technologies like React, Next.js,
