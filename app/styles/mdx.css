@@ -80,6 +80,7 @@
   background: var(--color-card);
   border-radius: 0.25rem;
   border: 1px solid var(--color-border);
+  color: #d4a373;
 }
 
 .mdx-content pre[data-language]::before {

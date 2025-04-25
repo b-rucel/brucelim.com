@@ -31,6 +31,11 @@ const blogPosts: BlogPost[] = [
     href: "/my-thoughts-on-vibe-coding",
     date: "2025-04-13"
   },
+  {
+    title: "Browser Gamepad Support",
+    href: "/browser-gamepad-support",
+    date: "2025-04-20"
+  },
   // Add more posts as you create them
 ];
 
