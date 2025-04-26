@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="buttonGradient" gradientUnits="userSpaceOnUse" x1="10" y1="0" x2="10" y2="20">
+      <stop offset="0" stop-color="#14243A"/>
+      <stop offset="0.1812" stop-color="#132A41"/>
+      <stop offset="0.4765" stop-color="#113553"/>
+      <stop offset="0.8471" stop-color="#0E4771"/>
+      <stop offset="1" stop-color="#0D4F7F"/>
+    </linearGradient>
+    <linearGradient id="shineGradient" gradientUnits="userSpaceOnUse" x1="9.999" y1="2" x2="9.999" y2="16.318">
+      <stop offset="0" stop-color="#F7F7F8" stop-opacity="0.5"/>
+      <stop offset="0.8" stop-color="#141414" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="letterGradient" gradientUnits="userSpaceOnUse" x1="10" y1="4.51" x2="10" y2="15.49">
+      <stop offset="0" stop-color="#3492B1"/>
+      <stop offset="0.0242" stop-color="#318EAC"/>
+      <stop offset="0.186" stop-color="#237A98"/>
+      <stop offset="0.3458" stop-color="#1B6F8B"/>
+      <stop offset="0.5" stop-color="#186B87"/>
+      <stop offset="0.6542" stop-color="#1B6F8B"/>
+      <stop offset="0.814" stop-color="#237A98"/>
+      <stop offset="0.9758" stop-color="#318EAC"/>
+      <stop offset="1" stop-color="#3492B1"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <circle fill="url(#buttonGradient)" cx="10" cy="10" r="10"/>
+    <circle fill="url(#shineGradient)" cx="9.999" cy="10" r="7.999"/>
+    <path
+      fill="url(#letterGradient)"
+      d="M11.76,9.793 15.721,4.51 12.176,4.51 10.002,7.773 7.846,4.51 4.248,4.51 8.225,9.887 
+        4.018,15.49 7.578,15.49 9.996,12.014 12.289,15.49 15.982,15.49 11.76,9.793z"
+    />
+  </g>
+</svg>
