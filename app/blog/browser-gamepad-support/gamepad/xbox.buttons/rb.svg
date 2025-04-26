@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="buttonGradient" gradientUnits="userSpaceOnUse" x1="35" y1="0" x2="35" y2="70">
+      <stop offset="0" stop-color="#4A4A4A"/>
+      <stop offset="0.1812" stop-color="#535353"/>
+      <stop offset="0.4765" stop-color="#5C5C5C"/>
+      <stop offset="0.8471" stop-color="#666666"/>
+      <stop offset="1" stop-color="#707070"/>
+    </linearGradient>
+    <linearGradient id="shineGradient" gradientUnits="userSpaceOnUse" x1="35" y1="5" x2="35" y2="65">
+      <stop offset="0" stop-color="#F7F7F8" stop-opacity="0.5"/>
+      <stop offset="0.8" stop-color="#141414" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="textGradient" gradientUnits="userSpaceOnUse" x1="35" y1="20" x2="35" y2="50">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.5" stop-color="#E0E0E0"/>
+      <stop offset="1" stop-color="#CCCCCC"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <path d="m61.598 50s2.3172 1e-6 3.815-1.768 1.117-4.0537 1.117-4.0537l-2.9524-17.711s-0.49076-2.9453-2.516-5.1393-4.922-2.9184-4.922-2.9184l-37.625-9.0888s-2.733-0.74932-5.6239 0.22637c-2.8908 0.97568-4.6108 3.2279-4.6108 3.2279l-2.9909 3.7386s-1.3081 1.6351-1.8684 3.7263-0.098956 4.6922-0.098956 4.6922l3.482 20.89s0.3013 1.8083 1.7001 2.9932c1.3987 1.185 3.232 1.185 3.232 1.185z" 
+          fill="url(#buttonGradient)" 
+          stroke="#000000" 
+          stroke-width="2"/>
+    <path d="m61.598 50s2.3172 1e-6 3.815-1.768 1.117-4.0537 1.117-4.0537l-2.9524-17.711s-0.49076-2.9453-2.516-5.1393-4.922-2.9184-4.922-2.9184l-37.625-9.0888s-2.733-0.74932-5.6239 0.22637c-2.8908 0.97568-4.6108 3.2279-4.6108 3.2279l-2.9909 3.7386s-1.3081 1.6351-1.8684 3.7263-0.098956 4.6922-0.098956 4.6922l3.482 20.89s0.3013 1.8083 1.7001 2.9932c1.3987 1.185 3.232 1.185 3.232 1.185z" 
+          fill="url(#shineGradient)" 
+          fill-opacity="0.5"/>
+    <text x="35" 
+          y="42" 
+          fill="url(#textGradient)" 
+          font-family="sans-serif" 
+          font-size="25.333px" 
+          font-weight="bold"
+          text-anchor="middle" 
+          letter-spacing="-2px">RB</text>
+  </g>
+</svg>
