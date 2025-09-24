@@ -68,8 +68,6 @@ Hold **Command + R** during startup until you see the Apple logo or spinning glo
 3. Click **First Aid** to scan and repair disk errors
 4. If Disk Utility reports repairs, restart your Mac to test the fix
 
-
-
 ### Reinstall macOS
 If disk repair doesn't work, try reinstalling macOS:
 
@@ -80,6 +78,13 @@ If disk repair doesn't work, try reinstalling macOS:
 
 After trying Disk Utility and First Aid with no success, I tried to reinstall macOS over my the old files, since i knew this would keep my personal files intact. However, this is where I hit another roadblock, as I tried to select the Drive location to install the OS over. The drive wanst seletable and it showed a label: `com.apple.buildinfo.preflight.error error 21`. This error prevented the installation from proceeding and led me down a much deeper troubleshooting path.
 
+<div className="flex justify-center items-center my-12">
+  <img
+    src="/images/blog/my-mac-wouldnt-boot-up-recovery-guide/facepalm.jpg"
+    alt="Mac OS Loading Screen"
+    className="mx-auto"
+  />
+</div>
 
 ## Step 3: Error 21
 
@@ -120,7 +125,13 @@ Your startup disk must be **APFS** format for macOS High Sierra and later. Using
 
 I tried all of these solutions extensively. Internet Recovery Mode seemed promising at first - I could see the spinning globe indicating it was downloading a fresh recovery environment from Apple's servers. However, I still encountered the same `com.apple.buildinfo.preflight.error error 21` when attempting to reinstall macOS. Even switching Wi-Fi networks and trying different approaches didn't resolve the issue. At this point, I realized I needed to take more drastic measures.
 
-
+<div className="flex justify-center items-center my-12">
+  <img
+    src="/images/blog/my-mac-wouldnt-boot-up-recovery-guide/baby-facepalm.jpg"
+    alt="Mac OS Loading Screen"
+    className="mx-auto"
+  />
+</div>
 
 ## Step 4: Data Recovery Before Nuclear Option
 
@@ -154,6 +165,14 @@ For developers, exclude `node_modules`, `.next`, and `.venv` folders to save spa
 # Create compressed archives excluding development folders
 tar --exclude='node_modules' --exclude='.next' --exclude='.venv' -czvf project.tar.gz /Volumes/Macintosh\ HD/Users/yourusername/project/
 ```
+
+<div className="flex justify-center items-center my-12">
+  <img
+    src="/images/blog/my-mac-wouldnt-boot-up-recovery-guide/nuclear.jpg"
+    alt="Mac OS Loading Screen"
+    className="mx-auto"
+  />
+</div>
 
 ## Step 5: The Nuclear Option - Complete Drive Erase
 
@@ -218,4 +237,4 @@ df -h /Volumes/Drive
 diskutil eject /dev/disk2
 ```
 
-While this experience was frustrating, it taught me valuable lessons about Mac recovery and the importance of having a solid backup strategy. Hopefully, this guide helps you recover your Mac without losing your precious data!
+While this experience was frustrating, it taught me valuable lessons about Mac recovery and the importance of having a solid backup strategy. Also I got a fresh install of OS Tahoe 😎. Hopefully, this guide helps you recover your Mac without losing your precious data!
