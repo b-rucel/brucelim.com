@@ -154,6 +154,19 @@ export default function Home() {
             <h2 className="text-lg font-semibold">Ramblings</h2>
             <div className="space-y-8">
               <article className="group">
+                <a href="/blog/my-mac-wouldnt-boot-up-recovery-guide" className="block space-y-2">
+                  <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                    My Mac Wouldn't Boot Up Recovery Guide
+                  </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      When my Mac refused to start: navigating boot failures, testing recovery options, and finding the solution.
+                    </p>
+                  <time className="text-sm text-gray-500 dark:text-gray-300">
+                    September 23, 2025
+                  </time>
+                </a>
+              </article>
+              <article className="group">
                 <a href="/blog/browser-gamepad-support" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                     Browser Gamepad Support
