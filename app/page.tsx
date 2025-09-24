@@ -156,7 +156,7 @@ export default function Home() {
               <article className="group">
                 <a href="/blog/my-mac-wouldnt-boot-up-recovery-guide" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
-                    My Mac Wouldn't Boot Up Recovery Guide
+                    My Mac Wouldn&apos;t Boot Up Recovery Guide
                   </h3>
                     <p className="text-gray-600 dark:text-gray-400">
                       When my Mac refused to start: navigating boot failures, testing recovery options, and finding the solution.
