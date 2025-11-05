@@ -154,6 +154,19 @@ export default function Home() {
             <h2 className="text-lg font-semibold">Ramblings</h2>
             <div className="space-y-8">
               <article className="group">
+                <a href="/blog/ghostty-wsl-install" className="block space-y-2">
+                  <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                    Building Ghostty on WSL: A Journey from Snap to Source
+                  </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      A comprehensive guide to installing Ghostty terminal emulator on Windows WSL, from quick snap installation to building from source with all dependencies.
+                    </p>
+                  <time className="text-sm text-gray-500 dark:text-gray-300">
+                    November 5, 2025
+                  </time>
+                </a>
+              </article>
+              <article className="group">
                 <a href="/blog/my-mac-wouldnt-boot-up-recovery-guide" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                     My Mac Wouldn&apos;t Boot Up Recovery Guide
