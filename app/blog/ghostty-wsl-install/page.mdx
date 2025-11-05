@@ -77,6 +77,17 @@ sudo ninja -C build install
 sudo ldconfig
 ```
 
+<div className="flex justify-center items-center my-12">
+  <img
+    src="/images/blog/ghostty-wsl-install/gtk4.install.webp"
+    alt="Building gtk4-layer-shell from source"
+    className="mx-auto"
+  />
+</div>
+
+
+
+
 After running `ldconfig`, the library was properly registered and ready to use.
 
 ### Step 3: Getting the Right Zig Version
@@ -241,5 +252,13 @@ zig build -p $HOME/.local -Doptimize=ReleaseFast
 Building Ghostty from source on WSL takes some effort, but the result is a blazing-fast, feature-complete terminal emulator that integrates beautifully with Windows. The GPU acceleration and modern architecture make it noticeably snappier than traditional terminal emulators.
 
 While the build process has several steps, each one is straightforward once you know what you need. Plus, you gain valuable experience building software from source and understanding dependency management in Linux.
+
+<div className="flex justify-center items-center my-12">
+  <img
+    src="/images/blog/ghostty-wsl-install/ghostty.webp"
+    alt="Ghostty terminal emulator running successfully"
+    className="mx-auto"
+  />
+</div>
 
 Now go forth and enjoy your shiny new terminal! 😎
