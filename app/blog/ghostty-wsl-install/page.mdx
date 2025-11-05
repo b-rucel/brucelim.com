@@ -2,6 +2,14 @@
 
 <a href="https://ghostty.org/" target="_blank" rel="noopener noreferrer">Ghostty</a> is a fast, feature-rich, and GPU-accelerated terminal emulator that's been making waves in the developer community. If you're running Windows with WSL (Windows Subsystem for Linux), getting Ghostty up and running requires a bit of work, but the results are worth it. Let me walk you through my experience getting it working - from trying the quick snap install to building from source.
 
+<div className="flex justify-center items-center my-12">
+  <img
+    src="/images/blog/ghostty-wsl-install/opening.ghostty.webp"
+    alt="Ghostty terminal emulator running on WSL"
+    className="mx-auto"
+  />
+</div>
+
 ## The Quick Route: Snap Installation
 
 There are a few ways to get Ghostty running on Windows through WSL. The easiest is using snap:
@@ -153,6 +161,14 @@ You can place this shortcut in your Start Menu folder for easy access:<br/>
 ```
 C:\Users\YourWindowsUsername\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\
 ```
+
+<div className="flex justify-center items-center my-12">
+  <img
+    src="/images/blog/ghostty-wsl-install/ghostty.shortcut.webp"
+    alt="Windows shortcut properties for Ghostty"
+    className="mx-auto"
+  />
+</div>
 
 The `--gtk-single-instance=true` flag ensures that multiple shortcuts open new windows in the same Ghostty instance rather than spawning separate processes.
 
