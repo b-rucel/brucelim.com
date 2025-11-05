@@ -1,0 +1,264 @@
+# Building Ghostty on WSL: A Journey from Snap to Source
+
+<a href="https://ghostty.org/" target="_blank" rel="noopener noreferrer">Ghostty</a> is a fast, feature-rich, and GPU-accelerated terminal emulator that's been making waves in the developer community. If you're running Windows with WSL (Windows Subsystem for Linux), getting Ghostty up and running requires a bit of work, but the results are worth it. Let me walk you through my experience getting it working - from trying the quick snap install to building from source.
+
+<div className="flex justify-center items-center my-12">
+  <img
+    src="/images/blog/ghostty-wsl-install/opening.ghostty.webp"
+    alt="Ghostty terminal emulator running on WSL"
+    className="mx-auto"
+  />
+</div>
+
+## The Quick Route: Snap Installation
+
+There are a few ways to get Ghostty running on Windows through WSL. The easiest is using snap:
+
+```sh
+sudo apt install libgtk-4-dev libadwaita-1-dev
+
+sudo snap install --beta ghostty --classic
+```
+
+I initially thought, "Great! This was easy." But after launching it, I noticed it seemed buggy with certain UI buttons missing. The snap version was convenient but not quite ready for daily use. Time to try a different approach.
+
+## The Better Route: Building from Source 😎
+
+If you want the full experience with all features working correctly, building Ghostty from source is the way to go. It's more involved, but you get a stable, fully-functional terminal emulator. Here's my complete journey through the build process.
+
+### Step 1: Installing Dependencies
+
+First, I tried following the official <a href="https://ghostty.org/docs/install/build#debian-and-ubuntu" target="_blank" rel="noopener noreferrer">Ghostty build documentation for Debian/Ubuntu</a>
+
+```sh
+sudo apt install \
+  libgtk-4-dev \
+  libgtk4-layer-shell-dev \
+  libadwaita-1-dev \
+  gettext \
+  libxml2-utils
+```
+
+Of course, I immediately hit a roadblock:
+
+```
+E: Unable to locate package libgtk4-layer-shell-dev
+```
+
+Turns out `libgtk4-layer-shell-dev` is only available starting from Ubuntu 25.04, and my WSL instance was running an earlier version. No problem - I can build it from source.
+
+So I installed the dependencies that *were* available:
+
+```sh
+sudo apt install \
+  libgtk-4-dev \
+  libadwaita-1-dev \
+  gettext \
+  libxml2-utils
+```
+
+### Step 2: Building gtk4-layer-shell
+
+Since the package wasn't available, I had to compile <a href="https://github.com/wmww/gtk4-layer-shell" target="_blank" rel="noopener noreferrer">gtk4-layer-shell</a> from source:
+
+```sh
+# Install build dependencies
+sudo apt install meson ninja-build libwayland-dev wayland-protocols \
+  libgtk-4-dev gobject-introspection libgirepository1.0-dev \
+  gtk-doc-tools python3 valac
+
+# Clone and build
+git clone https://github.com/wmww/gtk4-layer-shell.git && cd gtk4-layer-shell
+
+meson setup -Dexamples=true -Ddocs=true -Dtests=true build
+ninja -C build
+
+sudo ninja -C build install
+sudo ldconfig
+```
+
+<div className="flex justify-center items-center my-12">
+  <img
+    src="/images/blog/ghostty-wsl-install/gtk4.install.webp"
+    alt="Building gtk4-layer-shell from source"
+    className="mx-auto"
+  />
+</div>
+
+
+
+
+After running `ldconfig`, the library was properly registered and ready to use.
+
+### Step 3: Getting the Right Zig Version
+
+Ghostty is built with <a href="https://ziglang.org/" target="_blank" rel="noopener noreferrer">Zig</a>, and version compatibility matters. According to the <a href="https://ghostty.org/docs/linux" target="_blank" rel="noopener noreferrer">Ghostty documentation</a>, here's what you need:
+
+| Ghostty Version | Zig Version |
+|----------------|-------------|
+| 1.0.x          | 0.13.0      |
+| 1.1.x          | 0.13.0      |
+| 1.2.x          | 0.14.1      |
+| tip (latest)   | 0.15.1      |
+
+For Ghostty 1.2.3, I needed Zig 0.14.1:
+
+```sh
+# Download Zig 0.14.1
+wget https://ziglang.org/download/0.14.1/zig-linux-x86_64-0.14.1.tar.xz
+
+# Extract it
+tar xf zig-linux-x86_64-0.14.1.tar.xz
+
+# Create symlink in your local bin
+ln -sf "$HOME/projects/labs/zig-linux-x86_64-0.14.1/zig" "$HOME/.local/bin/zig"
+
+# Verify it works
+zig version
+```
+
+### Step 4: Installing blueprint-compiler
+
+Here's where things got interesting. I started the build only to encounter errors related to `blueprint-compiler`. The version available in apt was outdated: `0.12.0`, so I had to get it from the snap store:
+
+```sh
+# Remove apt version if installed
+sudo apt remove blueprint-compiler
+
+# Install from snap
+sudo snap install blueprint-compiler --classic
+
+# Add snap bin to PATH
+export PATH="$PATH:/snap/bin"
+
+# Verify version (needs to be 0.16.0+)
+blueprint-compiler --version
+```
+
+This gave me version 0.16.0, which is exactly what we need.
+
+### Step 5: Downloading and Building Ghostty
+
+With all dependencies finally in place, I could download and build Ghostty:
+
+```sh
+# Download Ghostty source
+wget https://github.com/ghostty-org/ghostty/archive/refs/tags/v1.2.3.tar.gz
+
+# Extract both archives
+tar xf zig-linux-x86_64-0.14.1.tar.xz
+tar xf v1.2.3.tar.gz
+
+# Navigate to Ghostty directory
+cd ghostty-1.2.3
+
+# Build and install to ~/.local
+zig build -p $HOME/.local -Doptimize=ReleaseFast
+```
+
+After what felt like an eternity (Zig compiles are thorough), I finally saw the success message. No errors! 🎉
+
+### Step 6: Creating a Windows Shortcut
+
+Now that Ghostty is built and installed in `~/.local/bin/ghostty`, we need to make it easily accessible from Windows. Create a Windows shortcut with the following target:
+
+```
+"C:\Program Files\WSL\wslg.exe" -d Ubuntu --cd "~" -- /home/bruce/.local/bin/ghostty --gtk-single-instance=true
+```
+
+You can place this shortcut in your Start Menu folder for easy access:<br/>
+**Dont forget to update your username**
+
+```
+C:\Users\YourWindowsUsername\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\
+```
+
+<div className="flex justify-center items-center my-12">
+  <img
+    src="/images/blog/ghostty-wsl-install/ghostty.shortcut.webp"
+    alt="Windows shortcut properties for Ghostty"
+    className="mx-auto"
+  />
+</div>
+
+The `--gtk-single-instance=true` flag ensures that multiple shortcuts open new windows in the same Ghostty instance rather than spawning separate processes.
+
+## Bonus: Customizing Directory Colors
+
+After getting Ghostty running, I wanted to customize the terminal directory colors to make them more readable:
+
+```sh
+# Generate color database
+dircolors --print-database > ~/.dir_colors
+
+# Add to ~/.bashrc or ~/.zshrc
+export LS_COLORS=$LS_COLORS':di=36;01'    # directories in cyan
+export LS_COLORS=$LS_COLORS':tw=36;01'    # sticky directories
+export LS_COLORS=$LS_COLORS':ow=36;01'    # other-writable directories
+```
+
+## Configuration Tips
+
+Ghostty uses a simple configuration file located at `~/.config/ghostty/config`. Here are some settings to get you started:
+
+```sh
+# Font configuration
+font-family = "JetBrains Mono"
+font-size = 12
+
+# Theme
+theme = Catppuccin Mocha
+background-image = /mnt/c/Users/bruce/Pictures/bg/1338182.png
+background-image-fit = cover
+background-image-opacity = .12
+#background-opacity = 0.95 # this will actually set opacity of windows, not background image
+
+
+# Performance
+shell-integration = true
+```
+
+## Key Takeaways
+
+1. **Snap is convenient but buggy**: The snap installation is quick but may have UI issues
+2. **Building from source gives you control**: You get the latest features and better stability
+3. **Version compatibility matters**: Match your Zig version to your Ghostty version
+4. **Dependencies can be tricky on WSL**: Some packages aren't available in older Ubuntu versions
+5. **gtk4-layer-shell is difficult to find**: This package isn't available in apt for older Ubuntu versions and needs to be compiled from source
+6. **blueprint-compiler version mismatch**: The apt version (0.12.0) is outdated - you need 0.16.0+ from snap
+7. **WSLg makes GUI apps seamless**: Running Ghostty through WSLg provides a native-like experience
+
+## Troubleshooting
+
+If you encounter build errors:
+
+```sh
+# Make sure all dependencies are installed
+sudo apt update && sudo apt upgrade
+
+# Verify Zig version
+zig version
+
+# Check blueprint-compiler
+blueprint-compiler --version
+
+# Clean build and try again
+zig build clean
+zig build -p $HOME/.local -Doptimize=ReleaseFast
+```
+
+## Conclusion
+
+Building Ghostty from source on WSL takes some effort, but the result is a blazing-fast, feature-complete terminal emulator that integrates beautifully with Windows. The GPU acceleration and modern architecture make it noticeably snappier than traditional terminal emulators.
+
+While the build process has several steps, each one is straightforward once you know what you need. Plus, you gain valuable experience building software from source and understanding dependency management in Linux.
+
+<div className="flex justify-center items-center my-12">
+  <img
+    src="/images/blog/ghostty-wsl-install/ghostty.webp"
+    alt="Ghostty terminal emulator running successfully"
+    className="mx-auto"
+  />
+</div>
+
+Now go forth and enjoy your shiny new terminal! 😎
