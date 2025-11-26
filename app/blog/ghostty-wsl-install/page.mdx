@@ -105,17 +105,22 @@ For Ghostty 1.2.3, I needed Zig 0.14.1:
 
 ```sh
 # Download Zig 0.14.1
-wget https://ziglang.org/download/0.14.1/zig-linux-x86_64-0.14.1.tar.xz
+wget https://ziglang.org/download/0.14.1/zig-x86_64-linux-0.14.1.tar.xz
 
 # Extract it
-tar xf zig-linux-x86_64-0.14.1.tar.xz
+tar xf zig-x86_64-linux-0.14.1.tar.xz
 
 # Create symlink in your local bin
-ln -sf "$HOME/projects/labs/zig-linux-x86_64-0.14.1/zig" "$HOME/.local/bin/zig"
+ln -sf "$HOME/zig-x86_64-linux-0.14.1/zig" "$HOME/.local/bin/zig"
 
 # Verify it works
 zig version
 ```
+
+> **Note:** The incorrect link has been updated. Make sure to use the correct Zig version for your Ghostty installation.
+>
+> If the download commands above don't work, visit the official <a href="https://ziglang.org/download/" target="_blank" rel="noopener noreferrer">Zig downloads page</a> to get the correct version for your system.
+
 
 ### Step 4: Installing blueprint-compiler
 
@@ -157,6 +162,33 @@ zig build -p $HOME/.local -Doptimize=ReleaseFast
 ```
 
 After what felt like an eternity (Zig compiles are thorough), I finally saw the success message. No errors! 🎉
+
+---
+
+> **⚠️ Troubleshooting: iTerm2 Color Schemes 404 Error**
+>
+> If you encounter a build error like this:
+>
+> ```
+> error: bad HTTP response code: '404 Not Found'
+>   .url = "https://github.com/mbadolato/iTerm2-Color-Schemes/releases/download/release-20251002-142451-4a5043e/ghostty-themes.tgz",
+> ```
+>
+> This happens because the iTerm2 Color Schemes release referenced in `build.zig.zon` may have been updated or removed. To fix this:
+>
+> 1. Visit the <a href="https://github.com/mbadolato/iTerm2-Color-Schemes/releases" target="_blank" rel="noopener noreferrer">iTerm2-Color-Schemes releases page</a>
+> 2. Find the latest `ghostty-themes.tgz` release
+> 3. Update the `build.zig.zon` file in your Ghostty source directory with the new URL and hash:
+>
+> ```zig
+> .url = "https://github.com/mbadolato/iTerm2-Color-Schemes/releases/download/release-20251124-150533-2b326a8/ghostty-themes.tgz",
+> .hash = "N-V-__8AAPZCAwDJ0OsIn2nbr3FMvBw68oiv-hC2pFuY1eLN",
+> .lazy = true,
+> ```
+>
+> Then retry the build command.
+
+---
 
 ### Step 6: Creating a Windows Shortcut
 
