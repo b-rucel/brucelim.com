@@ -65,7 +65,7 @@ export default function Home() {
                       transition={{ type: "spring", stiffness: 300 }}
                     >
                       <Image
-                        src="/images/promptgenius.webp"
+                        src="/images/featured/promptgenius.webp"
                         alt="Prompt Genius"
                         width={400}
                         height={300}
@@ -88,6 +88,36 @@ export default function Home() {
               </article>
 
               <article className="group mb-8">
+                <a href="https://caricature-studio.pages.dev/" target="_blank" rel="noopener noreferrer" className="block">
+                  <div className="overflow-hidden rounded-sm md:h-48">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <Image
+                        src="/images/featured/caricature-studio.webp"
+                        alt="Caricature Studio Preview"
+                        width={400}
+                        height={300}
+                        className="object-cover w-full h-full"
+                      />
+                    </motion.div>
+                  </div>
+                  <div className="mt-4">
+                    <h3 className="text-lg font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                      Caricature Studio
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">
+                      An interactive tool for creating and styling caricatures powered by Cloudflare AI with real-time preview and customization options.
+                    </p>
+                    <div className="flex items-center space-x-4 mt-2">
+                      <span className="text-sm text-gray-500">React, TypeScript, Tailwind, Clouflare Workers AI</span>
+                    </div>
+                  </div>
+                </a>
+              </article>
+
+              <article className="group mb-8">
                 <a href="https://artoo.pages.dev" target="_blank" rel="noopener noreferrer" className="block">
                   <div className="overflow-hidden rounded-sm md:h-48">
                     <motion.div
@@ -95,7 +125,7 @@ export default function Home() {
                       transition={{ type: "spring", stiffness: 300 }}
                     >
                       <Image
-                        src="/images/artoo.webp"
+                        src="/images/featured/artoo.webp"
                         alt="Artoo Preview"
                         width={400}
                         height={300}
