@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import CustomCursor from '@/components/CustomCursor';
 import Image from 'next/image';
@@ -184,7 +185,7 @@ export default function Home() {
             <h2 className="text-lg font-semibold">Ramblings</h2>
             <div className="space-y-8">
               <article className="group">
-                <a href="/blog/ghostty-wsl-install" className="block space-y-2">
+                <Link href="/blog/ghostty-wsl-install" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                     Building Ghostty on WSL: A Journey from Snap to Source
                   </h3>
@@ -194,10 +195,10 @@ export default function Home() {
                   <time className="text-sm text-gray-500 dark:text-gray-300">
                     November 5, 2025
                   </time>
-                </a>
+                </Link>
               </article>
               <article className="group">
-                <a href="/blog/my-mac-wouldnt-boot-up-recovery-guide" className="block space-y-2">
+                <Link href="/blog/my-mac-wouldnt-boot-up-recovery-guide" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                     My Mac Wouldn&apos;t Boot Up Recovery Guide
                   </h3>
@@ -207,10 +208,10 @@ export default function Home() {
                   <time className="text-sm text-gray-500 dark:text-gray-300">
                     September 23, 2025
                   </time>
-                </a>
+                </Link>
               </article>
               <article className="group">
-                <a href="/blog/browser-gamepad-support" className="block space-y-2">
+                <Link href="/blog/browser-gamepad-support" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                     Browser Gamepad Support
                   </h3>
@@ -220,10 +221,10 @@ export default function Home() {
                   <time className="text-sm text-gray-500 dark:text-gray-300">
                     April 20, 2025
                   </time>
-                </a>
+                </Link>
               </article>
               <article className="group">
-                <a href="/blog/my-thoughts-on-vibe-coding" className="block space-y-2">
+                <Link href="/blog/my-thoughts-on-vibe-coding" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                     My Thoughts on Vibe Coding
                   </h3>
@@ -233,10 +234,10 @@ export default function Home() {
                   <time className="text-sm text-gray-500 dark:text-gray-300">
                   April 13, 2025
                   </time>
-                </a>
+                </Link>
               </article>
               <article className="group">
-                <a href="/blog/launch-your-website-using-cloudflare-pages" className="block space-y-2">
+                <Link href="/blog/launch-your-website-using-cloudflare-pages" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                     Launch Your Website Using Cloudflare Pages
                   </h3>
@@ -246,10 +247,10 @@ export default function Home() {
                   <time className="text-sm text-gray-500 dark:text-gray-300">
                   April 05, 2025
                   </time>
-                </a>
+                </Link>
               </article>
               <article className="group">
-                <a href="/blog/threejs-plane-demo" className="block space-y-2">
+                <Link href="/blog/threejs-plane-demo" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                   Three.js Plane Demo: Creating a 3D Experience
                   </h3>
@@ -259,10 +260,10 @@ export default function Home() {
                   <time className="text-sm text-gray-500 dark:text-gray-300">
                   March 28, 2025
                   </time>
-                </a>
+                </Link>
               </article>
               <article className="group">
-                <a href="/blog/digging-ssh-mastering-secure-connections" className="block space-y-2">
+                <Link href="/blog/digging-ssh-mastering-secure-connections" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                     Digging SSH: Mastering Secure Connections
                   </h3>
@@ -272,10 +273,10 @@ export default function Home() {
                   <time className="text-sm text-gray-500 dark:text-gray-300">
                     March 24, 2025
                   </time>
-                </a>
+                </Link>
               </article>
               <article className="group">
-                <a href="/blog/hello-world" className="block space-y-2">
+                <Link href="/blog/hello-world" className="block space-y-2">
                   <h3 className="text-xl font-medium group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                     Hello World
                   </h3>
@@ -285,7 +286,7 @@ export default function Home() {
                   <time className="text-sm text-gray-500 dark:text-gray-300">
                     March 16, 2025
                   </time>
-                </a>
+                </Link>
               </article>
             </div>
           </section>
