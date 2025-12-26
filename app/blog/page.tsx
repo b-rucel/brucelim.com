@@ -1,19 +1,70 @@
-export default async function BlogIndexPage() {
-  return (
-    <div className="flex-grow grid-background flex flex-col gap-1 sm:min-h-[91vh] min-h-[88vh] pt-8">
-      <div className="max-w-[960px] w-full mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="my-7 flex flex-col gap-2">
-          <h1 className="sm:text-3xl text-2xl font-extrabold">
-            The latest blogs
-          </h1>
-          <p className="text-muted-foreground sm:text-[16.5px] text-[14.5px]">
-            Explore my thoughts, experiences and learnings in software development, tech and etc
-          </p>
-        </div>
-        <div className="grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 sm:gap-8 gap-4 mb-5">
+import Link from 'next/link';
+import { getAllBlogPosts } from '@/lib/markdown';
 
-        </div>
+export const metadata = {
+  title: 'Blog',
+  description: 'Read my latest blog posts on web development, programming, and tech topics',
+};
+
+export default async function BlogPage() {
+  const posts = await getAllBlogPosts();
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold mb-4">Blog</h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Thoughts on web development, programming, and technology
+        </p>
       </div>
+
+      <div className="space-y-8">
+        {posts.map((post) => (
+          <article
+            key={post.href}
+            className="border-b border-gray-200 dark:border-gray-800 pb-8 last:border-b-0"
+          >
+            <Link href={`/blog${post.href}`}>
+              <h2 className="text-2xl font-bold mb-2 hover:text-gray-600 dark:hover:text-gray-400 transition-colors">
+                {post.title}
+              </h2>
+            </Link>
+
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+              {new Date(post.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </p>
+
+            {post.description && (
+              <p className="text-gray-700 dark:text-gray-300 mb-4">
+                {post.description}
+              </p>
+            )}
+
+            {post.tags && post.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {post.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-block px-3 py-1 text-sm bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+
+      {posts.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-gray-600 dark:text-gray-400">No blog posts found</p>
+        </div>
+      )}
     </div>
   );
 }
