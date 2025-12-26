@@ -10,8 +10,34 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Bruce Lim",
+  title: {
+    default: "Bruce Lim",
+    template: "%s | Bruce Lim",
+  },
   description: "Welcome to my corner of the web",
+
+  // Open Graph
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://brucelim.com",
+    siteName: "Bruce Lim",
+    title: "Bruce Lim",
+    description: "Welcome to my corner of the web",
+  },
+
+  // Twitter
+  twitter: {
+    card: "summary_large_image",
+    title: "Bruce Lim",
+    description: "Welcome to my corner of the web",
+  },
+
+  // Robots
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

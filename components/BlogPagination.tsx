@@ -2,13 +2,19 @@
 
 import Link from 'next/link';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
-import { usePathname } from 'next/navigation';
-import { getPreviousNext } from '@/lib/markdown';
 
-export default function BlogPagination() {
-  const pathname = usePathname();
-  const currentPath = pathname.replace('/blog', '');
-  const { prev, next } = getPreviousNext(currentPath);
+type BlogPost = {
+  title: string;
+  href: string;
+  date: string;
+};
+
+type BlogPaginationProps = {
+  prev?: BlogPost | null;
+  next?: BlogPost | null;
+};
+
+export default function BlogPagination({ prev, next }: BlogPaginationProps) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 grid grid-cols-2 gap-4 py-8">
