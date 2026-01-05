@@ -4,5 +4,13 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "pages_build_output_dir": ".vercel/output/static"
+  "pages_build_output_dir": ".vercel/output/static",
+  "env": {
+    "preview": {
+      "vars": {
+        "NEXT_PUBLIC_SUPABASE_URL": "https://qvpaxbeauymacznkdjkr.supabase.co",
+        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_zchpqc49ElW2-T_-HvAbCA_wQPBXErr"
+      }
+    }
+  }
 }
