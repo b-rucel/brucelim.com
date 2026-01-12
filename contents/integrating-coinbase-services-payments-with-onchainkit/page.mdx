@@ -1,0 +1,334 @@
+---
+title: "Integrating Coinbase Services Payments with OnchainKit"
+description: "Add a crypto payment button to your Base chain Next.js app in 5 minutes. Accept USDC payments with zero backend setup required."
+date: "2026-01-07"
+author: "Bruce Lim"
+tags: ["onchainkit", "usdc", "base", "coinbase", "payments", "nextjs", "crypto", "frontend"]
+---
+
+<div className="flex justify-center items-center aspect-video overflow-hidden rounded-lg">
+  <img
+    src="/images/blog/integrating-coinbase-services-crypto-commerce/header.webp"
+    alt="Supabase and Resend integration"
+    className="w-full h-full object-cover"
+  />
+</div>
+
+
+# Integrating Coinbase Services Payments with OnchainKit
+
+I wanted to add crypto payments to my site without building a whole backend. OnchainKit seemed to offer  right tools—pre-built components for wallet connection, minimal setup, everything on-chain. So I experimented with getting it working.
+
+## Base Chain Only
+
+OnchainKit Checkout works exclusively on Base. If you need multi-chain support (Ethereum, Polygon, Arbitrum, etc.), use the [Coinbase Commerce API](/blog/accepting-crypto-payments-with-coinbase-commerce-api) instead.
+
+<div className="my-8 p-4 border-l-4 border-green-400 bg-slate-800">
+  <p className="font-semibold text-green-100">This is for you if:</p>
+  <p className="text-green-200 text-sm">You want to accept payments as fast as possible. You don't need complex order tracking or enterprise features. You just need a "Pay with Crypto" button that works.</p>
+  <p className="font-semibold text-blue-100">Need more control?</p>
+  <p className="text-blue-200 text-sm">Check out our <a href="/blog/accepting-crypto-payments-with-coinbase-commerce-api" className="text-blue-300 hover:text-blue-200 underline" target="_blank" rel="noopener noreferrer">Coinbase Commerce API guide</a> for full backend integration, custom order tracking, and webhook support.</p>
+</div>
+
+## Try It Live
+
+import { DonationComponent } from './DonationComponent';
+
+<DonationComponent />
+
+## What You'll Need
+
+- **Next.js 15** app (or React)
+- **Wagmi** and **Viem** for contract interactions
+- **OnchainKit** for the ConnectWallet component
+- **NEXT_PUBLIC_ONCHAINKIT_API_KEY** environment variable
+
+---
+
+## Building a Donation Component with Wagmi + OnchainKit
+
+Following the official OnchainKit configuration examples led to errors during setup. Not sure what was causing the errors, but I found the correct configuration that works with wagmi and onchainkit.
+
+### Step 1: Set Up Wagmi Configuration
+
+Create a wagmi config file at `lib/wagmi.ts`:
+
+```typescript
+import { createConfig, http } from 'wagmi';
+import { base } from 'wagmi/chains';
+import { coinbaseWallet, injected } from 'wagmi/connectors';
+
+export const wagmiConfig = createConfig({
+  chains: [base],
+  connectors: [
+    injected(),
+    coinbaseWallet({ appName: 'Your App Name' }),
+  ],
+  transports: {
+    [base.id]: http(),
+  },
+});
+```
+
+### Step 2: Create a Provider Wrapper
+
+Create `app/providers.tsx`:
+
+```typescript
+'use client';
+
+import { ReactNode } from 'react';
+import { WagmiProvider } from 'wagmi';
+import { OnchainKitProvider } from '@coinbase/onchainkit';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { base } from 'wagmi/chains';
+import { wagmiConfig } from '@/lib/wagmi';
+
+type ProvidersProps = {
+  children: ReactNode;
+};
+
+const queryClient = new QueryClient();
+
+export function Providers({ children }: ProvidersProps) {
+  return (
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <OnchainKitProvider
+          apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
+          chain={base}
+        >
+          {children}
+        </OnchainKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
+  );
+}
+```
+
+Then wrap your app in `app/layout.tsx`:
+
+```typescript
+import { Providers } from './providers';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+### Step 3: Build the Donation Component
+
+Create `contents/integrating-coinbase-services-payments-with-onchainkit/DonationComponent.tsx`:
+
+```typescript
+'use client';
+
+import { useState, useEffect } from 'react';
+import { ConnectWallet } from '@coinbase/onchainkit/wallet';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { parseUnits, type Address } from 'viem';
+
+// USDC on Base Mainnet
+const USDC_BASE_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as Address;
+const USDC_DECIMALS = 6;
+
+const RECIPIENT_ADDRESS = '0xa95cb331277c85f8D42714B24E4724DA67f205d0' as Address;
+
+// Minimal ERC20 Transfer ABI
+const ERC20_TRANSFER_ABI = [
+  {
+    constant: false,
+    inputs: [
+      { name: '_to', type: 'address' },
+      { name: '_value', type: 'uint256' }
+    ],
+    name: 'transfer',
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'nonpayable',
+    type: 'function'
+  }
+] as const;
+
+export function DonationComponent() {
+  const { address, isConnected, chainId } = useAccount();
+  const { writeContractAsync, isPending } = useWriteContract();
+  const [amount, setAmount] = useState('1');
+  const [mounted, setMounted] = useState(false);
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const { isLoading: isConfirming } = useWaitForTransactionReceipt({
+    hash: txHash as Address,
+  });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleDonate = async () => {
+    if (!address || !amount || parseFloat(amount) <= 0) return;
+
+    try {
+      setError(null);
+      const hash = await writeContractAsync({
+        address: USDC_BASE_ADDRESS,
+        abi: ERC20_TRANSFER_ABI,
+        functionName: 'transfer',
+        args: [RECIPIENT_ADDRESS, parseUnits(amount, USDC_DECIMALS)],
+      });
+      setTxHash(hash);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send donation';
+      setError(errorMessage);
+      console.error('Donation failed:', err);
+    }
+  };
+
+  if (!mounted) {
+    return (
+      <div className="w-full max-w-md mx-auto mt-8 p-6 rounded-lg border border-slate-700 bg-slate-900">
+        <h2 className="text-2xl font-bold mb-4">Support My Work</h2>
+        <p className="text-slate-300 mb-6">
+          Help me keep writing and building. Donate USDC on Base.
+        </p>
+        <div className="h-10 bg-slate-800 rounded-lg animate-pulse" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-md mx-auto mt-8 p-6 rounded-lg border border-slate-700 bg-slate-900">
+      <h2 className="text-2xl font-bold mb-4">Support My Work</h2>
+      <p className="text-slate-300 mb-6">
+        Help me keep writing and building. Donate USDC on Base.
+      </p>
+
+      {/* Wallet Connection */}
+      <div className="mb-6">
+        {!isConnected ? (
+          <ConnectWallet className="w-full" />
+        ) : (
+          <div className="p-4 bg-slate-800 rounded-lg">
+            <p className="text-sm text-slate-400 mb-2">Connected Wallet</p>
+            <p className="font-mono text-sm text-green-400 break-all">
+              {address}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Donation Form */}
+      {isConnected && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Amount (USDC)
+            </label>
+            <input
+              type="number"
+              min="0.1"
+              step="0.1"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              disabled={isPending || isConfirming}
+              className="w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 disabled:opacity-50"
+              placeholder="1.0"
+            />
+          </div>
+
+          {/* Donate Button */}
+          <button
+            onClick={handleDonate}
+            disabled={!amount || parseFloat(amount) <= 0 || isPending || isConfirming}
+            className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+          >
+            {isPending ? 'Signing...' : isConfirming ? 'Confirming...' : `Donate ${amount} USDC`}
+          </button>
+
+          {/* Transaction Status */}
+          {txHash && (
+            <div className="p-4 bg-blue-900 border border-blue-700 rounded-lg">
+              <p className="text-sm text-blue-100 mb-2">Transaction Sent</p>
+              <a
+                href={`https://basescan.org/tx/${txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-300 hover:text-blue-200 text-sm break-all underline"
+              >
+                {txHash}
+              </a>
+              {isConfirming && <p className="text-sm text-blue-200 mt-2">Confirming...</p>}
+              {!isConfirming && <p className="text-sm text-green-300 mt-2">✓ Confirmed!</p>}
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="p-4 bg-red-900 border border-red-700 rounded-lg">
+              <p className="text-sm text-red-200">Error: {error}</p>
+            </div>
+          )}
+
+          <p className="text-xs text-slate-500 text-center mt-4">
+            Powered by Base • Wagmi • OnchainKit
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+**Key Details:**
+
+- **`'use client'`** - Required because this uses React hooks and wagmi
+- **`useWriteContract`** - Wagmi hook that handles contract writing and returns `writeContractAsync` to manually trigger transactions
+- **`useWaitForTransactionReceipt`** - Monitors the transaction hash and provides confirmation status via `isLoading`
+- **ERC20 Transfer** - Calls the `transfer` function on the USDC contract to send funds to the recipient
+- **USDC Address** - `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` is USDC on Base mainnet
+- **Mounted Check** - Prevents hydration mismatch with `useEffect` and `mounted` state
+- **ConnectWallet** - Shows OnchainKit's built-in wallet connector
+- **Manual Button Control** - Instead of using OnchainKit's `Transaction` component, this approach gives direct control over state and UI updates
+- **Transaction Feedback** - Shows signing status, confirmation status, transaction hash with Basescan link, and error handling
+
+### Step 4: Use the Component
+
+Import and add it to your blog post or page:
+
+```typescript
+import { DonationComponent } from './DonationComponent';
+
+<DonationComponent />
+```
+
+The component handles the entire flow:
+1. User clicks "Connect Wallet" if not connected (OnchainKit component)
+2. They're prompted to connect their wallet (Coinbase Wallet, MetaMask, etc.)
+3. They enter a donation amount
+4. Click the "Donate" button
+5. Wagmi's `writeContractAsync` signs the transaction via the user's wallet
+6. `useWaitForTransactionReceipt` monitors confirmation on-chain
+7. Transaction hash links to Basescan for transparency
+8. Error states are caught and displayed
+
+All transactions happen on-chain through the user's wallet. The only OnchainKit component used is `ConnectWallet`—everything else is wagmi and viem.
+
+---
+
+## What I Learned
+
+The official OnchainKit examples looked good in the docs, but they didn't work when I tried to set them up. Instead of spendig time trying to debug the error from the configuration setup, but instead to using wagmi in the provider.
+
+OnchainKit's pre-built `Transaction` component uses the `wallet_sendCalls` RPC method. I'm using Rabby wallet and I was getting the error: `The method "wallet_sendCalls" does not exist / is not available.`
+
+I switched to wagmi's hooks which use standard `eth_sendTransaction` calls instead and that seems to have fixed the issue.
+
+lesson learned is that many proposed prebuilt solutions are not quite what it seems and sometime it's better to just to learn that encapsulation layer and build your own solutions.
+
+

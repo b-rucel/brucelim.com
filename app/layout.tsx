@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
+import '@coinbase/onchainkit/styles.css';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import 'highlight.js/styles/github-dark.css';
+import { Providers } from './providers';
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -54,7 +56,9 @@ export default function RootLayout({
         <GoogleAnalytics measurementId="G-GDLTB1K7CS" />
       </head>
       <body className={`${outfit.variable} antialiased`}>
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
