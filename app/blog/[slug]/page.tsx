@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
 import { getAllBlogPosts, getBlogPost } from '@/lib/markdown';
 
 type PageProps = {
@@ -31,13 +32,13 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
       authors: post.author ? [post.author] : [],
       images: post.image
         ? [
-            {
-              url: `${baseUrl}${post.image}`,
-              width: 1200,
-              height: 630,
-              alt: post.title,
-            },
-          ]
+          {
+            url: `${baseUrl}${post.image}`,
+            width: 1200,
+            height: 630,
+            alt: post.title,
+          },
+        ]
         : [],
     },
 
@@ -77,6 +78,18 @@ export default async function BlogPost(props: PageProps) {
 
     return (
       <article className="prose prose-invert max-w-none px-4 py-8 md:px-8">
+        {post?.image && (
+          <div className="relative mb-8 w-full overflow-hidden rounded-xl aspect-video">
+            <Image
+              src={post.image}
+              alt={post.title}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover"
+            />
+          </div>
+        )}
         <Component />
       </article>
     );

@@ -13,6 +13,8 @@ export function AuthDemo() {
   const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
+    if (!supabase) return
+
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
@@ -29,8 +31,17 @@ export function AuthDemo() {
     return () => subscription.unsubscribe()
   }, [])
 
+  if (!supabase) {
+    return (
+      <div className="my-8 p-6 border border-zinc-700 rounded-lg bg-zinc-900">
+        <p className="text-yellow-400">Supabase configuration missing. This demo requires environment variables.</p>
+      </div>
+    )
+  }
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!supabase) return
     setIsLoading(true)
     setMessage('')
 
@@ -52,6 +63,7 @@ export function AuthDemo() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!supabase) return
     setIsLoading(true)
     setMessage('')
 
@@ -69,6 +81,7 @@ export function AuthDemo() {
   }
 
   const handleLogout = async () => {
+    if (!supabase) return
     await supabase.auth.signOut()
     setUser(null)
     setMessage('')
