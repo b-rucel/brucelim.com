@@ -182,7 +182,7 @@ export default function Home() {
 
           {/* Articles */}
           <section className="space-y-2 mb-12">
-            <h2 className="text-lg font-semibold">Ramblings</h2>
+            <Link href="/blog"><h2 className="text-lg font-semibold my-4">Ramblings</h2></Link>
             <div className="space-y-8">
               <article className="group">
                 <Link href="/blog/ghostty-wsl-install" className="block space-y-2">

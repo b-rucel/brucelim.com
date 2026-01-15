@@ -2,6 +2,7 @@ import BlogNav from '@/components/BlogNav';
 import Footer from '@/components/Footer';
 import BlogPagination from '@/components/BlogPagination';
 import { getPreviousNext } from '@/lib/markdown';
+import { WagmiProviders } from '@/app/providers';
 
 type LayoutProps = {
   children: React.ReactNode;
@@ -13,13 +14,15 @@ export default async function BlogLayout({ children, params }: LayoutProps) {
   const { prev, next } = await getPreviousNext(`/${slug}`);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <BlogNav />
-      <main className="flex-grow grid-background">
-        {children}
-        <BlogPagination prev={prev} next={next} />
-      </main>
-      <Footer />
-    </div>
+    <WagmiProviders>
+      <div className="min-h-screen flex flex-col">
+        <BlogNav />
+        <main className="flex-grow grid-background">
+          {children}
+          <BlogPagination prev={prev} next={next} />
+        </main>
+        <Footer />
+      </div>
+    </WagmiProviders>
   );
 }
