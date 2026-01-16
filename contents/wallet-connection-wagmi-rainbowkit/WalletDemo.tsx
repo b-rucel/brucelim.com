@@ -2,23 +2,104 @@
 
 import { useState, useEffect } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useBalance, useChainId } from 'wagmi';
+import { useAccount, useBalance, useChainId, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import { mainnet, base, arbitrum, optimism, polygon } from 'wagmi/chains';
+import { pulsechain } from '@/lib/wagmi';
 import type { Address } from 'viem';
+import { parseUnits, formatUnits } from 'viem';
 
-const CHAINS = [mainnet, base, arbitrum, optimism, polygon];
+const CHAINS = [mainnet, base, arbitrum, optimism, polygon, pulsechain];
+
+// USDC contract addresses for each supported chain
+const USDC_ADDRESSES: Record<number, Address> = {
+  [mainnet.id]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+  [base.id]: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+  [arbitrum.id]: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+  [optimism.id]: '0x0b2c639c533813f4aa9d7837caf62653d097ff85',
+  [polygon.id]: '0x3c499c542cef5e3811e1192ce70d8cc03d5c3359',
+  [pulsechain.id]: '0x15d38573d2feeb82e7ad5187ab8c1d52810b1f07',
+};
+
+// Your donation wallet address
+const DONATION_ADDRESS: Address = '0x4a5BBCdf73525e26167B7BEaf2129bc62E7E4459'
+
+const ERC20_ABI = [
+  {
+    inputs: [
+      { name: 'recipient', type: 'address' },
+      { name: 'amount', type: 'uint256' }
+    ],
+    name: 'transfer',
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ name: 'account', type: 'address' }],
+    name: 'balanceOf',
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+] as const;
 
 export function WalletDemo() {
   const [mounted, setMounted] = useState(false);
+  const [donationAmount, setDonationAmount] = useState('');
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { data: balanceData, isLoading: isLoadingBalance } = useBalance({
     address: address as Address,
   });
 
+  const usdcAddress = USDC_ADDRESSES[chainId];
+
+  // Read USDC balance
+  const { data: usdcBalance, refetch: refetchUsdcBalance } = useReadContract({
+    address: usdcAddress,
+    abi: ERC20_ABI,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    query: {
+      enabled: !!address && !!usdcAddress,
+    },
+  });
+
+  // Write contract hook for USDC transfer
+  const { writeContract, data: hash, isPending, error } = useWriteContract();
+
+  // Wait for transaction confirmation
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash,
+  });
+
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (isConfirmed) {
+      setDonationAmount('');
+      refetchUsdcBalance();
+    }
+  }, [isConfirmed, refetchUsdcBalance]);
+
+  const handleDonate = () => {
+    if (!donationAmount || !usdcAddress) return;
+
+    try {
+      const amount = parseUnits(donationAmount, 6); // USDC has 6 decimals
+
+      writeContract({
+        address: usdcAddress,
+        abi: ERC20_ABI,
+        functionName: 'transfer',
+        args: [DONATION_ADDRESS, amount],
+      });
+    } catch (err) {
+      console.error('Error preparing transaction:', err);
+    }
+  };
 
   if (!mounted) {
     return (
@@ -90,7 +171,7 @@ export function WalletDemo() {
                       <button
                         onClick={openChainModal}
                         type="button"
-                        className="group relative flex items-center gap-2 px-5 py-3 bg-slate-800/80 backdrop-blur-sm hover:bg-slate-700/80 text-white font-medium rounded-xl transition-all duration-200 border-2 border-slate-600/50 hover:border-blue-500/50 shadow-lg hover:shadow-blue-500/20"
+                        className="group relative flex items-center gap-4 px-5 py-3 bg-slate-800/80 backdrop-blur-sm hover:bg-slate-700/80 text-white font-medium rounded-xl transition-all duration-200 border-2 border-slate-600/50 hover:border-blue-500/50 shadow-lg hover:shadow-blue-500/20 min-w-[300px]"
                       >
                         {chain.hasIcon && (
                           <div className="w-6 h-6 rounded-full overflow-hidden ring-2 ring-white/10 group-hover:ring-blue-400/50 transition-all">
@@ -163,6 +244,80 @@ export function WalletDemo() {
               MetaMask, Coinbase Wallet, Rabby, Rainbow, WalletConnect, and 100+ more wallets
             </p>
           </div>
+
+          {usdcAddress && (
+            <>
+              <div className="p-4 bg-slate-800 rounded-lg">
+                <p className="text-sm text-slate-400 mb-2">USDC Balance on {currentChain?.name}</p>
+                {usdcBalance !== undefined ? (
+                  <p className="text-2xl font-bold text-white">
+                    {formatUnits(usdcBalance as bigint, 6)} USDC
+                  </p>
+                ) : (
+                  <p className="text-slate-400">Loading USDC balance...</p>
+                )}
+              </div>
+
+              <div className="p-4 bg-gradient-to-br from-green-900/30 to-emerald-900/30 rounded-lg border border-green-700/50">
+                <p className="text-lg font-semibold text-white mb-4">
+                  💚 Support with USDC Donation
+                </p>
+
+                <div className="space-y-3">
+                  <div>
+                    <label htmlFor="donation-amount" className="block text-sm text-slate-300 mb-2">
+                      Amount (USDC)
+                    </label>
+                    <input
+                      id="donation-amount"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={donationAmount}
+                      onChange={(e) => setDonationAmount(e.target.value)}
+                      placeholder="0.00"
+                      disabled={isPending || isConfirming}
+                      className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500 disabled:opacity-50"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleDonate}
+                    disabled={!donationAmount || isPending || isConfirming || parseFloat(donationAmount) <= 0}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isPending || isConfirming ? 'Processing...' : 'Send Donation'}
+                  </button>
+
+                  {hash && (
+                    <div className="mt-3 p-3 bg-slate-900 rounded-lg">
+                      <p className="text-xs text-slate-400 mb-1">Transaction Hash:</p>
+                      <a
+                        href={`${currentChain?.blockExplorers?.default.url}/tx/${hash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-green-400 hover:text-green-300 font-mono break-all"
+                      >
+                        {hash}
+                      </a>
+                      {isConfirming && (
+                        <p className="text-xs text-yellow-400 mt-2">Waiting for confirmation...</p>
+                      )}
+                      {isConfirmed && (
+                        <p className="text-xs text-green-400 mt-2">✓ Transaction confirmed! Thank you!</p>
+                      )}
+                    </div>
+                  )}
+
+                  {error && (
+                    <div className="mt-3 p-3 bg-red-900/30 border border-red-700/50 rounded-lg">
+                      <p className="text-xs text-red-400">Error: {error.message}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
