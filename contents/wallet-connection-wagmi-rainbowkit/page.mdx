@@ -491,3 +491,144 @@ If you need wagmi 3.x features, you'll need to build custom wallet UI without Ra
 - [RainbowKit docs](https://www.rainbowkit.com/docs/introduction)
 - [viem docs](https://viem.sh/)
 - [WalletConnect Cloud](https://cloud.walletconnect.com/)
+
+## Implementing ERC20 Token Interactions: USDC Donations
+
+The demo component includes a real-world example of ERC20 token interactions by implementing a USDC donation feature across all supported chains. This demonstrates how to read token balances, initiate transfers, and track transaction status.
+
+### Setting Up USDC Contract Addresses
+
+Different chains use different USDC contract addresses. We maintain a mapping of chain IDs to their respective USDC addresses:
+
+```tsx
+const USDC_ADDRESSES: Record<number, Address> = {
+  [mainnet.id]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+  [base.id]: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+  [arbitrum.id]: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+  [optimism.id]: '0x0b2c639c533813f4aa9d7837caf62653d097ff85',
+  [polygon.id]: '0x3c499c542cef5e3811e1192ce70d8cc03d5c3359',
+  [pulsechain.id]: '0x15d38573d2feeb82e7ad5187ab8c1d52810b1f07',
+};
+
+const DONATION_ADDRESS: Address = '0x4a5BBCdf73525e26167B7BEaf2129bc62E7E4459';
+```
+
+### Reading ERC20 Token Balances
+
+Use the `useReadContract` hook to read USDC balances. The ERC20 standard `balanceOf` function returns the token balance for a given address:
+
+```tsx
+const ERC20_ABI = [
+  {
+    inputs: [{ name: 'account', type: 'address' }],
+    name: 'balanceOf',
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { name: 'recipient', type: 'address' },
+      { name: 'amount', type: 'uint256' }
+    ],
+    name: 'transfer',
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+] as const;
+
+const { data: usdcBalance, refetch: refetchUsdcBalance } = useReadContract({
+  address: usdcAddress,
+  abi: ERC20_ABI,
+  functionName: 'balanceOf',
+  args: address ? [address] : undefined,
+  query: {
+    enabled: !!address && !!usdcAddress,
+  },
+});
+```
+
+Format the balance using `formatUnits` from viem, accounting for USDC's 6 decimal places:
+
+```tsx
+{usdcBalance !== undefined && (
+  <p className="text-2xl font-bold text-white">
+    {formatUnits(usdcBalance as bigint, 6)} USDC
+  </p>
+)}
+```
+
+### Implementing Token Transfers
+
+Use `useWriteContract` to initiate ERC20 token transfers. The donation handler converts the user input to the proper units before calling the contract:
+
+```tsx
+const { writeContract, data: hash, isPending, error } = useWriteContract();
+
+const handleDonate = () => {
+  if (!donationAmount || !usdcAddress) return;
+
+  try {
+    const amount = parseUnits(donationAmount, 6); // USDC has 6 decimals
+
+    writeContract({
+      address: usdcAddress,
+      abi: ERC20_ABI,
+      functionName: 'transfer',
+      args: [DONATION_ADDRESS, amount],
+    });
+  } catch (err) {
+    console.error('Error preparing transaction:', err);
+  }
+};
+```
+
+### Transaction Status and Confirmation
+
+Track transaction confirmation status using `useWaitForTransactionReceipt`:
+
+```tsx
+const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+  hash,
+});
+```
+
+Display transaction status with a link to the block explorer:
+
+```tsx
+{hash && (
+  <div className="mt-3 p-3 bg-slate-900 rounded-lg">
+    <p className="text-xs text-slate-400 mb-1">Transaction Hash:</p>
+    <a
+      href={`${currentChain?.blockExplorers?.default.url}/tx/${hash}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-xs text-green-400 hover:text-green-300 font-mono break-all"
+    >
+      {hash}
+    </a>
+    {isConfirming && (
+      <p className="text-xs text-yellow-400 mt-2">Waiting for confirmation...</p>
+    )}
+    {isConfirmed && (
+      <p className="text-xs text-green-400 mt-2">✓ Transaction confirmed! Thank you!</p>
+    )}
+  </div>
+)}
+```
+
+### Auto-Refresh After Confirmation
+
+Automatically refresh the USDC balance and clear the input field after successful confirmation:
+
+```tsx
+useEffect(() => {
+  if (isConfirmed) {
+    setDonationAmount('');
+    refetchUsdcBalance();
+  }
+}, [isConfirmed, refetchUsdcBalance]);
+```
+
+This pattern ensures users see their updated balance immediately after a successful donation, providing clear feedback that their transaction was processed.
