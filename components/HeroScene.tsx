@@ -88,9 +88,9 @@ const P5Sketch = () => {
 
 
 export default function HeroScene() {
-    return (
-        <div className="absolute inset-0 z-0 h-[100%] w-full overflow-hidden bg-background">
-            <P5Sketch />
-        </div>
-    );
+  return (
+    <div className="absolute inset-0 z-0 h-[100%] w-full overflow-hidden bg-background">
+      <P5Sketch />
+    </div>
+  );
 }
