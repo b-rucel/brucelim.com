@@ -4,7 +4,7 @@ import {
   coinbaseWallet,
   rabbyWallet,
 } from '@rainbow-me/rainbowkit/wallets';
-import { createConfig, http } from 'wagmi';
+import { createConfig, http, createStorage, cookieStorage } from 'wagmi';
 import { mainnet, base, arbitrum, optimism, polygon } from 'wagmi/chains';
 import { defineChain } from 'viem';
 
@@ -42,6 +42,9 @@ export const wagmiConfig = createConfig({
   connectors,
   chains: [mainnet, base, arbitrum, optimism, polygon, pulsechain],
   ssr: true,
+  storage: createStorage({
+    storage: cookieStorage,
+  }),
   multiInjectedProviderDiscovery: true,
   transports: {
     [mainnet.id]: http(),
