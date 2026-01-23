@@ -6,7 +6,7 @@ import styles from './HeroImage.module.css';
 
 export default function Hero() {
   return (
-    <section className="min-h-[90vh] flex flex-col justify-center py-20 relative">
+    <section className="min-h-[90vh] flex flex-col justify-center pt-10 pb-20 md:py-20 relative">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -14,8 +14,9 @@ export default function Hero() {
         className="relative z-10 p-8 md:p-12 rounded-3xl bg-background/80 border border-white/10 shadow-2xl"
       >
         <div className="flex items-center gap-6 md:gap-8 mb-8">
+
           {/* Image Container with Glow Effect */}
-          <div className="relative w-32 h-32 md:w-32 md:h-32 flex items-center justify-center">
+          <div className="relative w-28 md:w-32 aspect-square flex items-center justify-center shrink-0">
             {/* Rotating Glow Ring */}
             <div className={styles.container}>
               <span></span>

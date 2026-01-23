@@ -11,6 +11,12 @@
         "NEXT_PUBLIC_SUPABASE_URL": "https://qvpaxbeauymacznkdjkr.supabase.co",
         "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_zchpqc49ElW2-T_-HvAbCA_wQPBXErr"
       }
+    },
+    "production": {
+      "vars": {
+        "NEXT_PUBLIC_SUPABASE_URL": "https://qvpaxbeauymacznkdjkr.supabase.co",
+        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_zchpqc49ElW2-T_-HvAbCA_wQPBXErr"
+      }
     }
   }
 }
