@@ -1,15 +1,29 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 export default function CustomCursor() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isClicking, setIsClicking] = useState(false);
+
+  // Use MotionValues to track mouse position without triggering re-renders
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Smooth springs for the outer ring (the "follower") to create the trail effect
+  const springConfig = { damping: 20, stiffness: 150, mass: 0.5 };
+  const cursorX = useSpring(mouseX, springConfig);
+  const cursorY = useSpring(mouseY, springConfig);
+
+  // Stiffer springs for the inner dot for snappy response
+  const dotSpringConfig = { damping: 25, stiffness: 400, mass: 0.2 };
+  const dotX = useSpring(mouseX, dotSpringConfig);
+  const dotY = useSpring(mouseY, dotSpringConfig);
 
   useEffect(() => {
     const updateMousePosition = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
     };
 
     const handleMouseDown = () => setIsClicking(true);
@@ -24,45 +38,43 @@ export default function CustomCursor() {
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, []);
+  }, [mouseX, mouseY]);
 
   return (
     <>
-      {/* Outer ring */}
+      {/* Outer ring - The Follower (Trail) */}
       <motion.div
-        className="fixed top-0 left-0 w-8 h-8 pointer-events-none z-50 mix-blend-difference"
+        className="fixed top-0 left-0 w-8 h-8 pointer-events-none z-50 mix-blend-difference border-2 border-white rounded-full opacity-75"
+        style={{
+          x: cursorX,
+          y: cursorY,
+          translateX: '-50%', // Center the cursor
+          translateY: '-50%'
+        }}
         animate={{
-          x: mousePosition.x - 16,
-          y: mousePosition.y - 16,
           scale: isClicking ? 0.8 : 1,
         }}
         transition={{
-          type: 'spring',
-          damping: 30,
-          stiffness: 200,
-          mass: 0.5,
+          scale: { duration: 0.1 }
         }}
-      >
-        <div className="w-full h-full rounded-full border-2 border-white opacity-75" />
-      </motion.div>
+      />
 
-      {/* Inner dot */}
+      {/* Inner dot - The Pointer */}
       <motion.div
-        className="fixed top-0 left-0 w-2 h-2 pointer-events-none z-50 mix-blend-difference"
+        className="fixed top-0 left-0 w-2 h-2 pointer-events-none z-50 mix-blend-difference bg-white rounded-full"
+        style={{
+          x: dotX,
+          y: dotY,
+          translateX: '-50%', // Center the cursor
+          translateY: '-50%'
+        }}
         animate={{
-          x: mousePosition.x - 4,
-          y: mousePosition.y - 4,
           scale: isClicking ? 1.5 : 1,
         }}
         transition={{
-          type: 'spring',
-          damping: 20,
-          stiffness: 300,
-          mass: 0.3,
+          scale: { duration: 0.1 }
         }}
-      >
-        <div className="w-full h-full bg-white rounded-full" />
-      </motion.div>
+      />
     </>
   );
 }
