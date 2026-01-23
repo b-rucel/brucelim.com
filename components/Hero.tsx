@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import styles from './HeroImage.module.css';
 
 export default function Hero() {
   return (
@@ -12,21 +13,35 @@ export default function Hero() {
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="relative z-10 p-8 md:p-12 rounded-3xl bg-background/80 border border-white/10 shadow-2xl"
       >
-        <div className="relative w-24 h-24 md:w-32 md:h-32 mb-8 overflow-hidden rounded-full border-2 border-primary/20 backdrop-blur-2xl bg-white/5">
-          <Image
-            src="/images/vibing.jpg"
-            alt="Bruce Lim"
-            className="object-cover"
-            fill
-            sizes="(max-width: 768px) 96px, 128px"
-          />
+        <div className="flex items-center gap-6 md:gap-8 mb-8">
+          {/* Image Container with Glow Effect */}
+          <div className="relative w-32 h-32 md:w-32 md:h-32 flex items-center justify-center">
+            {/* Rotating Glow Ring */}
+            <div className={styles.container}>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            {/* Static Image */}
+            <div className="absolute inset-[10px] overflow-hidden rounded-full border-[3px] border-white z-10 bg-black">
+              <Image
+                src="/images/vibing.jpg"
+                alt="Bruce Lim"
+                className="object-cover"
+                fill
+                sizes="(max-width: 768px) 96px, 128px"
+              />
+            </div>
+          </div>
+
+          <h1 className="tracking-wide text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter leading-[0.9] text-foreground">
+            Bruce Lim
+          </h1>
         </div>
 
-        <h1 className="tracking-wide text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter leading-[0.9] text-foreground">
-          Bruce Lim
-        </h1>
-
-        <div className="max-w-xl mt-8">
+        <div className="max-w-xl mt-12">
           <p className="text-gray-200 text-xl md:text-2xl leading-relaxed">
             Software Engineer & Retro video game nerd focused on building elegant, performant, and user-centric web experiences.
           </p>
