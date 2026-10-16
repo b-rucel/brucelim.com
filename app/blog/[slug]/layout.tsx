@@ -1,6 +1,7 @@
 import BlogNav from '@/components/BlogNav';
 import Footer from '@/components/Footer';
 import BlogPagination from '@/components/BlogPagination';
+import ReadingRunner from '@/components/ReadingRunner';
 import { getPreviousNext } from '@/lib/markdown';
 
 type LayoutProps = {
@@ -15,6 +16,7 @@ export default async function BlogLayout({ children, params }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <BlogNav />
+      <ReadingRunner />
       <main className="flex-grow grid-background">
         {children}
         <BlogPagination prev={prev} next={next} />

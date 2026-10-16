@@ -1,0 +1,138 @@
+.panel {
+  margin-top: clamp(32px, 5vw, 64px);
+  padding: clamp(20px, 3vw, 32px);
+  background: rgba(14, 14, 22, 0.7);
+  border: 1px solid rgba(132, 205, 250, 0.25);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.4), inset 0 0 16px rgba(132, 205, 250, 0.05);
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.panelTitle {
+  font-family: monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #84cdfa;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.panelContent {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: clamp(20px, 4vw, 40px);
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .panelContent {
+    grid-template-columns: 1fr;
+  }
+}
+
+.charCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.avatarFrame {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  padding: 4px;
+  background: #121218;
+  border: 2px solid #84cdfa;
+  box-shadow: 0 0 12px rgba(132, 205, 250, 0.35);
+}
+
+.avatarImg {
+  object-fit: cover;
+  image-rendering: auto;
+}
+
+.charInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.charName {
+  display: block;
+  width: 64px;
+}
+
+.charClass {
+  font-family: monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.statsCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.statRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.statMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.statBar {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+}
+
+.segment {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 1px;
+  transition: background-color 140ms ease, box-shadow 140ms ease;
+}
+
+.segmentFilled {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segment {
+    transition: none !important;
+  }
+}
