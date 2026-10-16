@@ -27,17 +27,17 @@ The goal of this guide is to set up an agent that listens on Telegram, runs on a
 <div className="border-l-4 border-red-600 pl-4 py-3 my-6 bg-red-50 dark:bg-red-900/10">
   <h3 className="text-red-700 dark:text-red-400 font-bold text-lg m-0">Security Alert: Critical Update (Feb 2026)</h3>
   <div className="text-red-800 dark:text-red-200 mt-2">
-    <p>
+    <div>
       <strong>Advisory:</strong> <a href="https://github.com/openclaw/openclaw/security/advisories/GHSA-g8p2-7wf7-98mq" target="_blank" className="underline font-medium">GHSA-g8p2-7wf7-98mq</a><br/>
       <strong>Impact:</strong> 1-Click Remote Code Execution (RCE) via Authentication Token Exfiltration.<br/>
       <strong>Status:</strong> Patched in <strong>v2026.1.29</strong>.
-    </p>
-    <p className="mt-2">
+    </div>
+    <div className="mt-2">
       If you installed OpenClaw before February 2026, you are likely vulnerable. The vulnerability allows an attacker to compromise your gateway via a crafted link.
-    </p>
-    <p className="mt-2 font-semibold">
+    </div>
+    <div className="mt-2 font-semibold">
       Action Required: Ensure you are running version v2026.1.29 or later. If you are installing fresh using the methods in this guide (referencing the main branch), you will automatically get the latest patched version.
-    </p>
+    </div>
   </div>
 </div>
 
@@ -100,8 +100,8 @@ Instead of Docker, I used a "bare metal" setup script (`setup.sh`) that runs dir
 
 I was able to get it running on the 4GB VPS after a few attempts and adjustments to the setup script. I have provided both scripts below so you can take a look:
 
-*   [`setup.sh`](./setup.sh) (Bare Metal)
-*   [`setup-docker.sh`](./setup-docker.sh) (Docker)
+*   `setup.sh` (Bare Metal)
+*   `setup-docker.sh` (Docker)
 
 ```bash
 # Verify the service is running

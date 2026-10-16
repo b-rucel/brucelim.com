@@ -7,6 +7,7 @@ import { mainnet, base, arbitrum, optimism, polygon } from 'wagmi/chains';
 import { pulsechain } from '@/lib/wagmi';
 import type { Address } from 'viem';
 import { parseUnits, formatUnits } from 'viem';
+import { WagmiProviders } from '@/app/providers';
 
 const CHAINS = [mainnet, base, arbitrum, optimism, polygon, pulsechain];
 
@@ -43,7 +44,7 @@ const ERC20_ABI = [
   },
 ] as const;
 
-export function WalletDemo() {
+function WalletDemoContent() {
   const [mounted, setMounted] = useState(false);
   const [donationAmount, setDonationAmount] = useState('');
   const { address, isConnected } = useAccount();
@@ -323,3 +324,13 @@ export function WalletDemo() {
     </div>
   );
 }
+
+export function WalletDemo() {
+  return (
+    <WagmiProviders>
+      <WalletDemoContent />
+    </WagmiProviders>
+  );
+}
+
+export default WalletDemo;
