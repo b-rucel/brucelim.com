@@ -36,6 +36,20 @@ export const projects = [
     href: 'https://nextbase.pages.dev',
     tech: ['Next.js', 'Templates', 'MDX'],
   },
+  {
+    title: 'Terminal 1989',
+    description: 'Retro CRT workstation with a working shell and WebGL shader.',
+    image: '/images/lab/terminal-1989.webp',
+    href: '/lab/terminal-1989/index.html',
+    tech: ['Concept'],
+  },
+  {
+    title: 'Signal Room',
+    description: 'Scroll story with a pinned oscilloscope stage.',
+    image: '/images/lab/signal-room.webp',
+    href: '/lab/signal-room/index.html',
+    tech: ['Concept'],
+  },
 ];
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -55,12 +69,13 @@ export default function FeaturedWork() {
 
       <div className="hv-list relative">
         <BugSquash onScoreChange={setBugScore} />
-        {projects.map((project, index) => (
+        {projects.map((project, index) => {
+          const isExternal = project.href.startsWith('http');
+          return (
           <Reveal key={project.href} delay={index * 0.06}>
             <a
               href={project.href}
-              target="_blank"
-              rel="noopener noreferrer"
+              {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               className="hv-work-row group"
             >
               <span className="hv-work-no">
@@ -86,7 +101,8 @@ export default function FeaturedWork() {
               </span>
             </a>
           </Reveal>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

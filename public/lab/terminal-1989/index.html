@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TERMINAL 1989 — CRT Workstation Concept by Bruce Lim</title>
+<meta name="description" content="TERMINAL 1989, an interactive concept page by Bruce Lim: a fictional VANTAGE HX-88 workstation from 1989 boots VX/86, an operating system that never shipped. Green-phosphor WebGL CRT shader, typed boot sequence, operable mini shell.">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#07080a">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="terminal.css">
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script defer src="terminal.js"></script>
+</head>
+<body>
+<a class="skip" href="#about">Skip to About this concept</a>
+
+<div class="corner">
+  <span class="corner__tag">CONCEPT · LAB</span>
+  <a class="corner__link" href="/">← brucelim.com</a>
+</div>
+
+<main class="stage" id="stage">
+  <h1 class="sr-only">Terminal 1989 — an operable CRT workstation concept by Bruce Lim</h1>
+
+  <figure class="cabinet" id="cabinet" aria-label="VANTAGE HX-88 simulated CRT terminal. After the short boot it is interactive: type help in the terminal, or use the command chips below.">
+    <div class="bezel">
+      <span class="screw screw--tl" aria-hidden="true"></span>
+      <span class="screw screw--tr" aria-hidden="true"></span>
+      <span class="screw screw--bl" aria-hidden="true"></span>
+      <span class="screw screw--br" aria-hidden="true"></span>
+
+      <div class="screen" id="screen">
+        <div class="crt-wrap" id="crtWrap">
+          <canvas id="crt" aria-hidden="true"></canvas>
+          <div class="crt-flat" aria-hidden="true"></div>
+          <div class="bar" aria-hidden="true"></div>
+        </div>
+        <div class="glass" aria-hidden="true"></div>
+        <div class="flash" aria-hidden="true"></div>
+      </div>
+
+      <div class="deck">
+        <div class="vents" aria-hidden="true"></div>
+        <div class="badge">
+          <span class="badge__mark">VANTAGE HX-88</span>
+          <span class="badge__sub">VX/86 · 0.9.4 RC · THE BUILD THAT NEVER SHIPPED</span>
+        </div>
+        <div class="power">
+          <button class="fs" id="fsToggle" aria-pressed="false" aria-label="Enter fullscreen" title="Fullscreen">
+            <svg viewBox="0 0 14 14" width="13" height="13" aria-hidden="true">
+              <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <span class="power__label">PWR</span>
+          <button class="power__switch" id="powerSwitch" role="switch" aria-checked="false" aria-label="Station power">
+            <span class="power__thumb"></span>
+          </button>
+          <span class="led" id="led" aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
+
+    <figcaption class="deckhint">
+      <span class="hint-fine">Click the screen, then type. <kbd>↑</kbd><kbd>↓</kbd> recall history · <kbd>Tab</kbd> completes · any key skips the boot · <kbd>exit</kbd> ends the session.</span>
+    </figcaption>
+  </figure>
+
+  <input id="kbd" class="kbd" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="VX/86 command input — type help" inputmode="text" enterkeyhint="go">
+
+  <nav class="chips" id="chips" aria-label="Command shortcuts for touch devices">
+    <button type="button" data-cmd="help">help</button>
+    <button type="button" data-cmd="ls">ls</button>
+    <button type="button" data-cmd="cat DEBUG.LOG">cat debug.log</button>
+    <button type="button" data-cmd="cat README.1ST">cat readme</button>
+    <button type="button" data-cmd="run SPRITE.EXE">run sprite</button>
+    <button type="button" data-cmd="run WORM.COM">run worm</button>
+    <button type="button" data-cmd="clear">clear</button>
+    <button type="button" data-cmd="date">date</button>
+    <button type="button" data-cmd="exit">exit</button>
+  </nav>
+</main>
+
+<section class="about" id="about">
+  <h2>ABOUT THIS CONCEPT</h2>
+  <p><strong>TERMINAL 1989</strong> is a fictional debug session on the <span class="code">VANTAGE HX-88</span>, an invented desk machine running <span class="code">VX/86 0.9.4</span> — an operating system that never shipped. The files, the phantom-byte bug and the build that never made its booth are all fiction.</p>
+  <p>The phosphor screen is a <strong>2D text canvas fed to a WebGL shader</strong> (adapted from the MIT-licensed threeui CRT shader): barrel curvature, aperture grille, scanlines, rolling bar, vignette and hash-noise. When WebGL is off or motion is reduced, a pure-CSS scanline and vignette fallback renders the same canvas flat.</p>
+  <p>Power-on is a CRT collapse and flash, a <strong>synthetic memory count</strong> eased against a progress curve, and a boot log printed line by line into a blinking prompt. The <strong>mini shell</strong> is a hand-rolled interpreter: history, tab completion, files to read and two toy programs drawn frame by frame inside the terminal. It pauses when off-screen or when the tab hides, and caps pixel ratio at 2.</p>
+  <p class="about__fine">Reduced motion: every animation collapses to its final frame and the shell stays fully usable. Touch devices get tappable command chips instead of the keyboard. HX-88, VX/86 and Halcyon Micro Systems never existed.</p>
+  <p class="about__meta">TERMINAL 1989 · CONCEPT · LAB — a concept by <a href="/">Bruce Lim</a></p>
+</section>
+
+<div class="srlive" id="srlive" role="log" aria-live="polite" aria-label="Terminal output transcript"></div>
+</body>
+</html>
