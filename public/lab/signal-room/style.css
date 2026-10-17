@@ -1,0 +1,785 @@
+/* ==========================================================================
+   SIGNAL ROOM — the page is the receiver; scrolling tunes it.
+   Two colours plus near-black. One accent, and it only appears at lock.
+   ========================================================================== */
+
+/* --- Self-hosted faces ------------------------------------------------- */
+@font-face {
+  font-family: "Archivo Black";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/archivo-black-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/ibm-plex-mono-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/ibm-plex-mono-500.woff2") format("woff2");
+}
+
+/* --- Tokens ------------------------------------------------------------ */
+:root {
+  --bg: #08090b;
+  --ink: #e9e6df;
+  --accent: #ffb000;          /* reserved for the lock */
+  --hair: rgba(233, 230, 223, 0.16);
+  --hair-soft: rgba(233, 230, 223, 0.08);
+  --dim: rgba(233, 230, 223, 0.62);
+  --faint: rgba(233, 230, 223, 0.34);
+  --ghost: rgba(233, 230, 223, 0.16);
+
+  --font-display: "Archivo Black", "Arial Black", Impact, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --fs-mega: clamp(4rem, 22vw, 19rem);
+  --fs-statement: clamp(2rem, 7.2vw, 6rem);
+  --fs-passage: clamp(1rem, 0.95rem + 0.3vw, 1.22rem);
+  --fs-note: clamp(0.66rem, 0.62rem + 0.16vw, 0.74rem);
+  --fs-title: clamp(0.82rem, 0.78rem + 0.2vw, 0.98rem);
+
+  --gutter: clamp(1.1rem, 3.4vw, 3rem);
+  --chrome-h: 3.25rem;
+  --dial-h: 5.75rem;
+  --bleed: 7vw;
+
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: clamp(4rem, 10vh, 7rem);
+
+  --dur-fast: 180ms;
+  --dur-slow: 900ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --tune: 0;    /* dial position 0–1, written by the loop */
+}
+
+/* --- Reset ------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: var(--bg);
+  color-scheme: dark;
+  scroll-behavior: smooth;
+  overflow-x: clip;
+}
+
+body {
+  min-width: 320px;
+  padding-top: var(--chrome-h);
+  padding-bottom: calc(var(--dial-h) + env(safe-area-inset-bottom, 0px));
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--fs-passage);
+  line-height: 1.6;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "tnum" 1;
+}
+
+img,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.skip-link {
+  position: fixed;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 40;
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent);
+  color: var(--bg);
+  font-size: var(--fs-note);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transform: translateY(-250%);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* screen-reader text — stays in the accessibility tree */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* --- Background layers ------------------------------------------------- */
+#trace {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#grain {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  opacity: 0.05;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
+#flash {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: var(--accent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+#flash.is-on {
+  animation: flash 720ms var(--ease-out) 1;
+}
+
+@keyframes flash {
+  0% {
+    opacity: 0;
+  }
+  7% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* --- Chrome (top) ------------------------------------------------------ */
+.chrome {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--chrome-h);
+  padding: 0 var(--gutter);
+  background: rgba(8, 9, 11, 0.82);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--hair);
+  font-size: var(--fs-note);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.station {
+  color: var(--faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chrome-tools {
+  display: flex;
+  align-items: center;
+  gap: clamp(var(--space-3), 2.4vw, var(--space-6));
+  flex: none;
+}
+
+.chip {
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.audio-btn,
+.clock,
+.back-link {
+  color: var(--dim);
+  font-size: var(--fs-note);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.audio-btn {
+  padding: 0;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.audio-btn:hover,
+.back-link:hover {
+  color: var(--ink);
+}
+
+.audio-btn[aria-pressed="true"] {
+  color: var(--accent);
+}
+
+.clock {
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 860px) {
+  .station {
+    display: none;
+  }
+
+  .chrome {
+    justify-content: flex-end;
+  }
+
+  .chrome-tools {
+    flex: 1;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 520px) {
+  .clock {
+    display: none;
+  }
+}
+
+/* --- Type layers (noise → resolve) ------------------------------------- */
+.noise .w {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.noise .g {
+  display: inline-block;
+  transform: translate(
+      calc(var(--dx, 0) * var(--amp) * var(--n, 0)),
+      calc(var(--dy, 0) * var(--amp) * var(--n, 0))
+    )
+    rotate(calc(var(--dr, 0) * var(--n, 0) * 1deg));
+  opacity: calc(1 - var(--drop, 0) * var(--n, 0) * var(--dropamp, 1));
+}
+
+.noise {
+  --amp: 9px;
+}
+
+/* the receiver's own labels are signal too — they shimmer, but stay legible */
+.entry-no > .noise,
+.entry-title > .noise {
+  --amp: 2.5px;
+  --dropamp: 0.55;
+}
+
+/* --- Sections ---------------------------------------------------------- */
+.hero,
+.log,
+.outro {
+  overflow: clip;
+}
+
+/* --- Hero -------------------------------------------------------------- */
+.hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-6);
+  min-height: calc(100svh - var(--chrome-h));
+  /* the fixed dial must never sit over the foot of the cold open */
+  padding: var(--space-7) var(--gutter) calc(var(--dial-h) + var(--space-6));
+}
+
+.hero-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--hair-soft);
+}
+
+.hero-title {
+  font-size: var(--fs-mega);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.hero-foot {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 46rem;
+}
+
+.note {
+  color: var(--dim);
+  font-size: var(--fs-note);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.note--wide {
+  max-width: 46ch;
+  letter-spacing: 0.06em;
+  line-height: 1.7;
+}
+
+.note--hot {
+  color: var(--ink);
+  text-align: right;
+}
+
+.cell {
+  display: flex;
+  gap: var(--space-4);
+  color: var(--faint);
+  font-size: var(--fs-note);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.cell b {
+  color: var(--dim);
+  font-weight: 400;
+}
+
+/* --- Cropped display type ---------------------------------------------- */
+.crop {
+  display: block;
+  height: 0.74em;
+  margin-inline: calc(-1 * var(--gutter));
+  padding-inline: var(--gutter);
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: var(--fs-mega);
+  line-height: 1;
+}
+
+.crop--right {
+  text-align: right;
+}
+
+.crop--right .mega {
+  margin-right: calc(-1 * var(--bleed));
+}
+
+.crop--left .mega {
+  margin-left: calc(-1 * var(--bleed));
+}
+
+.mega {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 1em;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+}
+
+.crop .noise {
+  --amp: 0.055em;
+  --dropamp: 0.7;
+}
+
+.mega-row {
+  margin-bottom: var(--space-6);
+}
+
+/* entries sit one notch below the hero scale so a resolved passage always
+   clears the fixed dial at its resolve peak */
+.entry .crop {
+  font-size: clamp(3.4rem, 17vw, 15rem);
+}
+
+/* --- Log entries ------------------------------------------------------- */
+.entry {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-8) var(--gutter);
+  border-top: 1px solid var(--hair-soft);
+}
+
+.entry-no {
+  color: var(--faint);
+  font-size: var(--fs-note);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.entry-title {
+  font-size: var(--fs-title);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+  transition: color var(--dur-fast) linear;
+}
+
+.telemetry {
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+}
+
+.telemetry > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--hair-soft);
+  font-size: var(--fs-note);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.telemetry dt {
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+.telemetry dd {
+  color: var(--dim);
+  text-align: right;
+}
+
+.passage {
+  max-width: 62ch;
+  color: var(--ink);
+}
+
+@media (min-width: 900px) {
+  .entry {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-areas:
+      "no    no   no   .     .     .     .     .     .     .     .     ."
+      "mega  mega mega mega  mega  mega  mega  mega  mega  mega  mega  mega"
+      ".     .    .    title title title title title title title title ."
+      "tel   tel  tel  body  body  body  body  body  body  body  body  .";
+    row-gap: var(--space-6);
+    /* asymmetric on purpose: 9vh + 23vh keeps the old 16vh + 16vh total, so
+       the document height (and the dial mapping) is unchanged, but the entry
+       sits high enough that a resolved passage clears the fixed dial */
+    padding-block: clamp(4rem, 9vh, 6rem) clamp(8rem, 23vh, 16rem);
+  }
+
+  .entry-no {
+    grid-area: no;
+  }
+
+  .mega-row {
+    grid-area: mega;
+  }
+
+  .entry-title {
+    grid-area: title;
+  }
+
+  .telemetry {
+    grid-area: tel;
+  }
+
+  .passage {
+    grid-area: body;
+  }
+}
+
+/* --- Outro ------------------------------------------------------------- */
+.outro {
+  display: grid;
+  gap: var(--space-8);
+  min-height: calc(92svh - var(--dial-h));
+  padding: var(--space-8) var(--gutter) var(--space-8);
+  border-top: 1px solid var(--hair-soft);
+  align-content: center;
+}
+
+.statement {
+  max-width: 20ch;
+  font-family: var(--font-display);
+  font-size: var(--fs-statement);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.statement .noise {
+  --amp: 0.026em;
+  --dropamp: 0.55;
+}
+
+.ledger {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 34rem;
+}
+
+.ledger > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--hair-soft);
+  font-size: var(--fs-note);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ledger dt {
+  color: var(--faint);
+}
+
+.ledger dd {
+  color: var(--dim);
+  text-align: right;
+}
+
+.outro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.text-link {
+  color: var(--dim);
+  font-size: var(--fs-note);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.text-link:hover {
+  color: var(--accent);
+}
+
+/* --- Footer ------------------------------------------------------------ */
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--gutter) var(--space-6);
+  border-top: 1px solid var(--hair-soft);
+  color: var(--faint);
+  font-size: var(--fs-note);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.foot a:hover {
+  color: var(--ink);
+}
+
+/* --- Frequency dial (bottom) ------------------------------------------- */
+.dial {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  padding: var(--space-3) var(--gutter) calc(var(--space-5) + env(safe-area-inset-bottom, 0px));
+  background: rgba(8, 9, 11, 0.86);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--hair);
+}
+
+.dial-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  font-size: var(--fs-note);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.dial-band {
+  color: var(--faint);
+}
+
+.dial-mode {
+  color: var(--dim);
+  transition: color var(--dur-fast) linear;
+}
+
+.dial-read {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  transition: color var(--dur-fast) linear;
+}
+
+.dial-rail {
+  position: relative;
+  height: 16px;
+  margin-inline: 0;
+}
+
+/* 80 fine divisions, 8 majors — pure CSS, so the dial reads without JS */
+.dial-rail::before,
+.dial-rail::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.dial-rail::before {
+  height: 5px;
+  background: repeating-linear-gradient(90deg, var(--hair) 0 1px, transparent 1px 1.25%);
+}
+
+.dial-rail::after {
+  height: 11px;
+  background: repeating-linear-gradient(90deg, var(--faint) 0 1px, transparent 1px 12.5%);
+}
+
+.dial-marks i {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  height: 16px;
+  background: var(--ghost);
+}
+
+.dial-marks b {
+  position: absolute;
+  top: 100%;
+  transform: translateX(-50%);
+  padding-top: 2px;
+  color: var(--faint);
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dial-marks em {
+  font-style: normal;
+  color: var(--ghost);
+}
+
+@media (max-width: 700px) {
+  .dial-marks em {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .dial-band {
+    display: none;
+  }
+}
+
+.dial-needle {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 16px;
+  background: var(--ink);
+  will-change: transform;
+}
+
+.dial.is-lock .dial-needle,
+.dial.is-lock .dial-read,
+.dial.is-lock .dial-mode {
+  background: none;
+  color: var(--accent);
+}
+
+.dial.is-lock .dial-needle {
+  background: var(--accent);
+}
+
+/* --- The lock / slam --------------------------------------------------- */
+.entry.is-slam .mega {
+  animation: slam 460ms var(--ease-out) 1;
+}
+
+/* the accent holds for exactly as long as the carrier is locked */
+.entry.is-lock .entry-title {
+  color: var(--accent);
+}
+
+@keyframes slam {
+  0% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* --- Reduced motion: complete, static, readable ------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .noise .g {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  #grain {
+    opacity: 0.04;
+  }
+}

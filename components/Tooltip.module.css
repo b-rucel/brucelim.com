@@ -1,0 +1,44 @@
+.wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.bubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 10;
+  transform: translate(-50%, 0) scale(0.98);
+  transform-origin: 50% 100%;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #131313;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  /* Leave state: no delay, snaps away immediately. */
+  transition:
+    opacity 120ms ease-out,
+    transform 120ms ease-out;
+}
+
+.wrap:hover .bubble,
+.wrap:has(:focus-visible) .bubble {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+  transition-duration: 140ms;
+  transition-delay: 80ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble {
+    transition: none !important;
+  }
+}

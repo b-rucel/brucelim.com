@@ -25,6 +25,14 @@ export const metadata: Metadata = {
     siteName: "Bruce Lim",
     title: "Bruce Lim",
     description: "Welcome to my corner of the web",
+    images: [
+      {
+        url: "/images/vibing.jpg",
+        width: 626,
+        height: 626,
+        alt: "Bruce Lim",
+      },
+    ],
   },
 
   // Twitter
@@ -32,12 +40,19 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Bruce Lim",
     description: "Welcome to my corner of the web",
+    images: ["/images/vibing.jpg"],
   },
 
   // Robots
   robots: {
     index: true,
     follow: true,
+  },
+
+  // Base URL and canonical
+  metadataBase: new URL("https://brucelim.com"),
+  alternates: {
+    canonical: "./",
   },
 };
 
