@@ -1,26 +1,24 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { drawPixelText, pixelTextWidth } from '@/lib/pixel';
 import styles from './BreakoutMode.module.css';
 
-type Article = {
-  title: string;
-  date: string;
-  href: string;
-};
+const BALL_R = 4;
+const PADDLE_H = 8;
+const PADDLE_Y_PAD = 22; // paddle sits this far above the bottom edge
+const HUD_TOP = 40; // the ball cannot rise above the HUD line
+const START_LIVES = 3;
+const END_BEAT_MS = 1500;
 
 type Brick = {
-  index: number;
-  title: string;
-  href: string;
   x: number;
   y: number;
   w: number;
   h: number;
-  hit: boolean;
+  el: HTMLElement;
   color: string;
+  hit: boolean;
 };
 
 type Particle = {
@@ -29,333 +27,513 @@ type Particle = {
   vx: number;
   vy: number;
   life: number;
+  size: number;
   color: string;
 };
 
-const BRICK_PALETTE = [
-  '#9b59b6', // purple
-  '#5ad1cd', // cyan
-  '#f5c542', // yellow
-  '#84cdfa', // blue
-  '#ed6f5c', // red
-  '#3d5fd1', // deep blue
-  '#5ad1cd', // cyan
-  '#9b59b6', // purple
-];
+/** The game is desktop-pointer only; the page-level level makes no sense on touch. */
+export function breakoutSupported(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (window.innerWidth < 900) return false;
+  if (window.matchMedia('(hover: none)').matches) return false;
+  return true;
+}
 
-export default function BreakoutMode({
-  articles,
-  onClose,
-  listElement,
-}: {
-  articles: Article[];
-  onClose: () => void;
-  listElement: HTMLElement | null;
-}) {
-  const router = useRouter();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const liveRef = useRef<HTMLSpanElement>(null);
-  const [hitArticles, setHitArticles] = useState<number[]>([]);
-  const [selectedHitIdx, setSelectedHitIdx] = useState<number | null>(null);
+const BRICK_TAG = /^(BUTTON|IMG|SVG|CANVAS|SCRIPT|STYLE|NOSCRIPT|TEXTAREA|INPUT|SELECT|OPTION|VIDEO|AUDIO|IFRAME|OBJECT|EMBED)$/i;
+const CONTENT_SKIP_TAG = /^(SCRIPT|STYLE|NOSCRIPT|TEMPLATE|LINK|META|TITLE)$/i;
 
-  const announce = useCallback((msg: string) => {
-    if (liveRef.current) liveRef.current.textContent = msg;
-  }, []);
+function copyCanvasBitmaps(src: Element, clone: Element) {
+  const s = src.querySelectorAll('canvas');
+  const c = clone.querySelectorAll('canvas');
+  const n = Math.min(s.length, c.length);
+  for (let i = 0; i < n; i++) {
+    const from = s[i] as HTMLCanvasElement;
+    const to = c[i] as HTMLCanvasElement;
+    if (!from.width || !from.height) continue;
+    try {
+      to.getContext('2d')?.drawImage(from, 0, 0);
+    } catch {
+      /* tainted or zero-sized canvas: leave blank */
+    }
+  }
+}
 
+function collectTextNodes(node: Node, out: Text[]) {
+  for (const child of Array.from(node.childNodes)) {
+    if (child.nodeType === Node.TEXT_NODE) {
+      if ((child.textContent ?? '').trim()) out.push(child as Text);
+    } else if (child.nodeType === Node.ELEMENT_NODE) {
+      const el = child as Element;
+      if (BRICK_TAG.test(el.tagName)) continue; // single brick, inner text stays
+      collectTextNodes(child, out);
+    }
+  }
+}
+
+/** Split every text node of the clone into one span per word, in the clone only. */
+function splitWords(root: Element) {
+  const texts: Text[] = [];
+  collectTextNodes(root, texts);
+  for (const node of texts) {
+    const raw = node.textContent ?? '';
+    const frag = document.createDocumentFragment();
+    let i = 0;
+    while (i < raw.length) {
+      const ws = /^\s+/.exec(raw.slice(i));
+      if (ws) {
+        frag.append(document.createTextNode(ws[0]));
+        i += ws[0].length;
+        continue;
+      }
+      const wd = /\S+/.exec(raw.slice(i));
+      const word = (wd as RegExpExecArray)[0];
+      const span = document.createElement('span');
+      span.textContent = word;
+      span.setAttribute('data-brick-word', '');
+      frag.append(span);
+      i += word.length;
+    }
+    node.replaceWith(frag);
+  }
+}
+
+function brickColor(el: Element): string {
+  let node: Element | null = el;
+  while (node) {
+    const m = /rgba?\(([^)]+)\)/.exec(getComputedStyle(node).color);
+    if (m) {
+      const parts = m[1].split(',').map((p) => parseFloat(p));
+      const alpha = parts.length > 3 ? parts[3] : 1;
+      if (alpha > 0.05) return `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, 1)`;
+    }
+    node = node.parentElement;
+  }
+  return 'rgba(255, 255, 255, 0.85)';
+}
+
+function pickTopLevelRoot(): Element {
+  const kids = Array.from(document.body.children).filter(
+    (el) => !CONTENT_SKIP_TAG.test(el.tagName)
+  );
+  // The Next.js app usually lives in a single wrapper; descend into it so the
+  // level is built from real sections (header / main sections / footer).
+  if (kids.length === 1) {
+    const inner = Array.from(kids[0].children).filter(
+      (el) => !CONTENT_SKIP_TAG.test(el.tagName)
+    );
+    if (inner.length >= 1) return kids[0];
+  }
+  return document.body;
+}
+
+function hiDPICanvas(canvas: HTMLCanvasElement, w: number, h: number) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  return ctx;
+}
+
+export default function BreakoutMode({ onClose }: { onClose: () => void }) {
   useEffect(() => {
-    announce('Breakout game started. Use left and right arrow keys or pointer to move paddle. Press Escape to exit.');
-    return () => {
-      announce('Breakout game ended. Article list restored.');
-    };
-  }, [announce]);
+    if (!breakoutSupported()) {
+      onClose();
+      return;
+    }
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
-
+    const W = window.innerWidth;
+    const H = window.innerHeight;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    let width = canvas.clientWidth || 600;
-    let height = canvas.clientHeight || 500;
-    let raf = 0;
-    let last = 0;
-    let visible = true;
+    let done = false;
+    const timers = new Set<ReturnType<typeof setTimeout>>();
+    const later = (fn: () => void, ms: number) => {
+      const t = setTimeout(() => {
+        timers.delete(t);
+        fn();
+      }, ms);
+      timers.add(t);
+      return t;
+    };
 
-    // Paddle state
-    const paddleW = Math.max(70, Math.min(120, width * 0.22));
-    const paddleH = 8;
-    let paddleX = (width - paddleW) / 2;
+    // --- screen-reader live region lives outside any hidden subtree ---
+    const live = document.createElement('div');
+    live.className = 'sr-only';
+    live.setAttribute('aria-live', 'polite');
+    document.body.appendChild(live);
+    const announce = (msg: string) => {
+      live.textContent = '';
+      void live.offsetWidth; // restart the announcement
+      live.textContent = msg;
+    };
+
+    // --- remember the user's position first: scrolling to the level anchor
+    // is for building the level, but on exit we return them to where they were
+    const savedScrollY = window.scrollY;
+
+    // --- scroll to the level anchor, then lock scrolling ---
+    document.querySelector('#writing')?.scrollIntoView({ behavior: 'instant', block: 'start' });
+    const prevOverflow = document.body.style.overflow;
+    const prevPadding = document.body.style.paddingRight;
+    const scrollbarW = Math.max(0, W - document.documentElement.clientWidth);
+    document.body.style.overflow = 'hidden';
+    if (scrollbarW > 0) document.body.style.paddingRight = `${scrollbarW}px`;
+
+    // --- build the play layer from clones of the visible top-level sections ---
+    const layer = document.createElement('div');
+    layer.className = styles.layer;
+    const cloneHost = document.createElement('div');
+    cloneHost.setAttribute('aria-hidden', 'true');
+    cloneHost.setAttribute('inert', '');
+    layer.appendChild(cloneHost);
+
+    const root = pickTopLevelRoot();
+    const hiddenSources: { el: HTMLElement; prev: string }[] = [];
+    for (const el of Array.from(root.children)) {
+      if (CONTENT_SKIP_TAG.test(el.tagName)) continue;
+      const cs = getComputedStyle(el);
+      const rect = el.getBoundingClientRect();
+      const hasFixedInside = el.querySelector('*') ? !!Array.from(el.querySelectorAll('*')).some((d) => getComputedStyle(d).position === 'fixed') : false;
+      const paints = (rect.width > 0 && rect.height > 0) || hasFixedInside;
+      if (!paints || cs.display === 'none' || cs.visibility === 'hidden') continue;
+
+      const clone = el.cloneNode(true) as HTMLElement;
+      const pos = cs.position;
+      if (pos === 'fixed') {
+        clone.style.position = 'fixed';
+      } else {
+        clone.style.position = 'absolute';
+        clone.style.left = `${Math.round(rect.left)}px`;
+        clone.style.top = `${Math.round(rect.top)}px`;
+        clone.style.width = `${Math.round(rect.width)}px`;
+        if (rect.height > 0) clone.style.minHeight = `${Math.round(rect.height)}px`;
+      }
+      clone.style.margin = '0';
+      copyCanvasBitmaps(el, clone);
+      splitWords(clone);
+      // framer-motion Reveals frozen at their pre-animation inline state
+      // (opacity 0 / translate) would clone as invisible; force them settled.
+      for (const node of [clone, ...clone.querySelectorAll<HTMLElement>('*')]) {
+        if (node.style.opacity && node.style.opacity !== '1') node.style.opacity = '1';
+        if (node.style.transform && node.style.transform !== 'none') node.style.transform = 'none';
+      }
+      cloneHost.appendChild(clone);
+
+      // Hide the real page; clones replace it visually (layout untouched).
+      hiddenSources.push({
+        el: el as HTMLElement,
+        prev: (el as HTMLElement).style.getPropertyValue('visibility'),
+      });
+      (el as HTMLElement).style.setProperty('visibility', 'hidden', 'important');
+    }
+    document.body.appendChild(layer);
+
+    // --- canvas above the clones ---
+    const canvas = document.createElement('canvas');
+    canvas.className = styles.canvas;
+    canvas.setAttribute('tabindex', '-1');
+    canvas.setAttribute(
+      'aria-label',
+      'Breakout game over the page. Move the paddle with the arrow keys or the pointer. Launch the ball with Space or a click. Press Escape to exit.'
+    );
+    const ctx = hiDPICanvas(canvas, W, H);
+    layer.appendChild(canvas);
+
+    // --- close button ---
+    const topBar = document.createElement('div');
+    topBar.className = styles.topBar;
+    const hudText = document.createElement('span');
+    hudText.className = styles.hudText;
+    hudText.textContent = 'BREAKOUT • THE PAGE IS THE LEVEL';
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = styles.closeBtn;
+    closeBtn.setAttribute('data-breakout-close', '');
+    closeBtn.setAttribute('aria-label', 'Exit Breakout');
+    closeBtn.textContent = 'ESC ✕';
+    topBar.append(hudText, closeBtn);
+    layer.appendChild(topBar);
+
+    // --- level: every visible word/button/img/svg/canvas is a brick ---
+    const padTop = H - PADDLE_Y_PAD - 8; // keep the paddle strip clear
+    const bricks: Brick[] = [];
+    const brickNodes = cloneHost.querySelectorAll<HTMLElement>('[data-brick-word], button, img, svg, canvas');
+    for (const el of brickNodes) {
+      const cs = getComputedStyle(el);
+      if (cs.visibility === 'hidden' || cs.display === 'none' || parseFloat(cs.opacity || '1') === 0) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2) continue;
+      if (r.right <= 0 || r.left >= W || r.bottom <= 0 || r.top >= H) continue;
+      // Bricks whose bottom edge is above the HUD ceiling can never be
+      // reached by the ball; leaving them in would make the level
+      // impossible to clear. They stay as scenery in the clone.
+      if (r.bottom <= HUD_TOP + BALL_R + 1) continue;
+      const h = Math.min(r.height, padTop - r.top);
+      if (h < 3) continue;
+      bricks.push({
+        x: r.left,
+        y: r.top,
+        w: r.width,
+        h,
+        el,
+        color: brickColor(el),
+        hit: false,
+      });
+    }
+
+    // --- game state ---
+
+    const paddleW = Math.max(70, Math.min(140, W * 0.16));
+    let paddleX = (W - paddleW) / 2;
+    const paddleY = H - PADDLE_Y_PAD;
     let leftHeld = false;
     let rightHeld = false;
-    const paddleSpeed = 340;
-
-    // Ball state
-    const ballR = 4;
-    let ballX = width / 2;
-    let ballY = height - 40;
-    let ballVx = 160;
-    let ballVy = -200;
-    let ballAttached = false;
-
-    // Particles
+    let ballX = W / 2;
+    let ballY = paddleY - BALL_R - 2;
+    let ballVx = 0;
+    let ballVy = 0;
+    let attached = true;
+    let lives = START_LIVES;
+    let hits = 0;
+    let ended: 'over' | 'clear' | null = null;
     let particles: Particle[] = [];
+    let raf = 0;
+    let last = performance.now();
 
-    // Bricks measured from list rows
-    let bricks: Brick[] = [];
-    const measureBricks = () => {
-      const rect = canvas.getBoundingClientRect();
-      const rows = listElement ? listElement.querySelectorAll('.hv-post-row') : [];
-      if (rows.length > 0) {
-        bricks = Array.from(rows).map((row, i) => {
-          const r = row.getBoundingClientRect();
-          return {
-            index: i,
-            title: articles[i]?.title || `Article ${i + 1}`,
-            href: articles[i]?.href || '#',
-            x: Math.max(8, r.left - rect.left),
-            y: Math.max(28, r.top - rect.top),
-            w: Math.max(100, r.width),
-            h: Math.max(24, r.height),
-            hit: false,
-            color: BRICK_PALETTE[i % BRICK_PALETTE.length],
-          };
-        });
-      } else {
-        const topMargin = 34;
-        const totalH = height - topMargin - 60;
-        const rowH = Math.floor(totalH / articles.length);
-        bricks = articles.map((art, i) => ({
-          index: i,
-          title: art.title,
-          href: art.href,
-          x: 12,
-          y: topMargin + i * rowH,
-          w: width - 24,
-          h: Math.max(22, rowH - 6),
-          hit: false,
-          color: BRICK_PALETTE[i % BRICK_PALETTE.length],
-        }));
-      }
-    };
-
-    const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
-      width = canvas.clientWidth;
-      height = canvas.clientHeight;
-      canvas.width = Math.round(width * dpr);
-      canvas.height = Math.round(height * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.imageSmoothingEnabled = false;
-      measureBricks();
-      paddleX = Math.max(0, Math.min(width - paddleW, paddleX));
-    };
-
-    const spawnParticles = (x: number, y: number, color: string) => {
-      for (let i = 0; i < 8; i++) {
-        const angle = (Math.PI * 2 * i) / 8 + Math.random() * 0.5;
-        const spd = 40 + Math.random() * 80;
+    const burst = (b: Brick) => {
+      if (reduced) return;
+      const n = Math.max(6, Math.min(16, Math.round((b.w * b.h) / 90)));
+      for (let i = 0; i < n; i++) {
         particles.push({
-          x,
-          y,
-          vx: Math.cos(angle) * spd,
-          vy: Math.sin(angle) * spd,
-          life: 0.35,
-          color,
+          x: b.x + Math.random() * b.w,
+          y: b.y + Math.random() * b.h,
+          vx: (Math.random() - 0.5) * 240,
+          vy: (Math.random() - 0.5) * 240 - 60,
+          life: 0.3 + Math.random() * 0.3,
+          size: Math.random() > 0.6 ? 3 : 2,
+          color: b.color,
         });
       }
+    };
+
+    const endGame = (how: 'over' | 'clear') => {
+      if (ended) return;
+      ended = how;
+      announce(how === 'clear' ? 'Level clear! Every brick on the page is smashed.' : `Game over. No lives left. Score: ${hits} bricks.`);
+      later(() => exit(), END_BEAT_MS);
+    };
+
+    const teardown = () => {
+      cancelAnimationFrame(raf);
+      for (const t of timers) clearTimeout(t);
+      timers.clear();
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('resize', onResize);
+      layer.remove();
+      for (const { el, prev } of hiddenSources) {
+        if (prev) el.style.setProperty('visibility', prev, 'important');
+        else el.style.removeProperty('visibility');
+      }
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPadding;
+      window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+      // Silent cleanup (Strict Mode teardown / unmount): drop this instance's
+      // live region. A real exit keeps it so the "page restored" message lands.
+      if (!done) live.remove();
+    };
+
+    // Real exit (user-ended or programmatic): tear down, announce, unmount.
+    const exit = () => {
+      if (done) return;
+      done = true;
+      teardown();
+      announce('Breakout ended. The page is restored.');
+      // Plain timer on purpose: teardown() cancels the scheduled set, and this
+      // removal must still fire after the real exit unmounts the component.
+      setTimeout(() => live.remove(), 600);
+      onClose();
+    };
+
+    // React cleanup must NOT notify the parent: in dev, Strict Mode
+    // double-invokes effects, and onClose() there would unmount the
+    // freshly remounted game. Cleanup is a silent teardown only.
+
+    const launch = () => {
+      if (ended) return;
+      attached = false;
+      ballVy = -250;
+      ballVx = (Math.random() * 2 - 1) * 160;
     };
 
     const step = (dt: number) => {
-      // Paddle keyboard movement
-      if (leftHeld) paddleX -= paddleSpeed * dt;
-      if (rightHeld) paddleX += paddleSpeed * dt;
-      paddleX = Math.max(4, Math.min(width - paddleW - 4, paddleX));
+      if (ended) return;
+      if (leftHeld) paddleX -= 380 * dt;
+      if (rightHeld) paddleX += 380 * dt;
+      paddleX = Math.max(2, Math.min(W - paddleW - 2, paddleX));
 
-      // Particles
-      particles.forEach((p) => {
+      for (const p of particles) {
         p.x += p.vx * dt;
         p.y += p.vy * dt;
+        p.vy += 220 * dt;
         p.life -= dt;
-      });
+      }
       particles = particles.filter((p) => p.life > 0);
 
-      if (ballAttached) {
+      if (attached) {
         ballX = paddleX + paddleW / 2;
-        ballY = height - 24 - ballR;
+        ballY = paddleY - BALL_R - 2;
         return;
       }
 
-      // Ball movement
-      ballX += ballVx * dt;
-      ballY += ballVy * dt;
+      // Sub-stepping so the ball cannot tunnel through small words.
+      const speed = Math.hypot(ballVx, ballVy);
+      const steps = Math.max(1, Math.min(8, Math.ceil((speed * dt) / 3)));
+      const sdt = dt / steps;
+      for (let s = 0; s < steps; s++) {
+        ballX += ballVx * sdt;
+        ballY += ballVy * sdt;
 
-      // Walls
-      if (ballX - ballR <= 2) {
-        ballX = 2 + ballR;
-        ballVx = Math.abs(ballVx);
-      } else if (ballX + ballR >= width - 2) {
-        ballX = width - 2 - ballR;
-        ballVx = -Math.abs(ballVx);
-      }
+        if (ballX - BALL_R <= 2) {
+          ballX = 2 + BALL_R;
+          ballVx = Math.abs(ballVx);
+        } else if (ballX + BALL_R >= W - 2) {
+          ballX = W - 2 - BALL_R;
+          ballVx = -Math.abs(ballVx);
+        }
+        if (ballY - BALL_R <= HUD_TOP) {
+          ballY = HUD_TOP + BALL_R;
+          ballVy = Math.abs(ballVy);
+        }
 
-      if (ballY - ballR <= 24) {
-        ballY = 24 + ballR;
-        ballVy = Math.abs(ballVy);
-      }
-
-      // Paddle collision
-      const paddleY = height - 22;
-      if (
-        ballY + ballR >= paddleY &&
-        ballY - ballR <= paddleY + paddleH &&
-        ballX >= paddleX - 4 &&
-        ballX <= paddleX + paddleW + 4 &&
-        ballVy > 0
-      ) {
-        ballVy = -Math.abs(ballVy);
-        const hitOffset = (ballX - (paddleX + paddleW / 2)) / (paddleW / 2);
-        ballVx = hitOffset * 220;
-        spawnParticles(ballX, paddleY, '#5ad1cd');
-      }
-
-      // Bottom pit: respawn ball on paddle
-      if (ballY > height + 20) {
-        ballAttached = true;
-        ballVx = 160 * (Math.random() > 0.5 ? 1 : -1);
-        ballVy = -200;
-        setTimeout(() => {
-          ballAttached = false;
-        }, 800);
-      }
-
-      // Brick collisions
-      for (const brick of bricks) {
-        if (brick.hit) continue;
-        const testX = Math.max(brick.x, Math.min(ballX, brick.x + brick.w));
-        const testY = Math.max(brick.y, Math.min(ballY, brick.y + brick.h));
-        const distX = ballX - testX;
-        const distY = ballY - testY;
-        if (distX * distX + distY * distY <= ballR * ballR) {
-          brick.hit = true;
-          spawnParticles(testX, testY, brick.color);
-
-          // Bounce
-          if (Math.abs(distX) > Math.abs(distY)) {
-            ballVx = distX > 0 ? Math.abs(ballVx) : -Math.abs(ballVx);
-          } else {
-            ballVy = distY > 0 ? Math.abs(ballVy) : -Math.abs(ballVy);
+        for (const brick of bricks) {
+          if (brick.hit) continue;
+          const cx = Math.max(brick.x, Math.min(ballX, brick.x + brick.w));
+          const cy = Math.max(brick.y, Math.min(ballY, brick.y + brick.h));
+          const dx = ballX - cx;
+          const dy = ballY - cy;
+          if (dx * dx + dy * dy <= BALL_R * BALL_R) {
+            brick.hit = true;
+            hits += 1;
+            brick.el.style.setProperty('visibility', 'hidden', 'important');
+            burst(brick);
+            if (Math.abs(dx) > Math.abs(dy)) {
+              ballVx = dx > 0 ? Math.abs(ballVx) : -Math.abs(ballVx);
+            } else if (Math.abs(dy) > Math.abs(dx)) {
+              ballVy = dy > 0 ? Math.abs(ballVy) : -Math.abs(ballVy);
+            } else {
+              ballVx = -ballVx;
+              ballVy = -ballVy;
+            }
+            announce(`Brick hit. ${bricks.length - hits} left.`);
+            if (hits >= bricks.length) endGame('clear');
+            break;
           }
+        }
 
-          setHitArticles((prev) => (prev.includes(brick.index) ? prev : [...prev, brick.index]));
-          setSelectedHitIdx(brick.index);
-          announce(`${brick.title} hit! Press Enter or click to open.`);
+        if (ballVy > 0 && ballY + BALL_R >= paddleY && ballY - BALL_R <= paddleY + PADDLE_H && ballX >= paddleX - 6 && ballX <= paddleX + paddleW + 6) {
+          ballVy = -Math.abs(ballVy);
+          const offset = (ballX - (paddleX + paddleW / 2)) / (paddleW / 2);
+          ballVx = offset * 240;
+          if (!reduced) {
+            for (let i = 0; i < 4; i++) {
+              particles.push({ x: ballX, y: paddleY, vx: (Math.random() - 0.5) * 120, vy: -Math.random() * 80, life: 0.25, size: 2, color: '#5ad1cd' });
+            }
+          }
+        }
+
+        if (ballY > H + BALL_R + 10) {
+          lives -= 1;
+          if (lives > 0) {
+            announce(`Lost a life. ${lives} left.`);
+            attached = true;
+            ballVx = 0;
+          } else {
+            endGame('over');
+          }
           break;
         }
+        if (ended) break;
       }
     };
 
     const draw = () => {
-      ctx.clearRect(0, 0, width, height);
-
-      // Bricks
-      for (const brick of bricks) {
-        if (!brick.hit) {
-          // Unhit solid brick
-          ctx.fillStyle = 'rgba(20, 20, 28, 0.7)';
-          ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
-          ctx.strokeStyle = brick.color;
-          ctx.lineWidth = 1;
-          ctx.strokeRect(brick.x + 0.5, brick.y + 0.5, brick.w - 1, brick.h - 1);
-
-          // Top highlight
-          ctx.fillStyle = brick.color;
-          ctx.fillRect(brick.x + 2, brick.y + 2, brick.w - 4, 2);
-
-          // Title text in retro pixel font
-          const maxTextW = brick.w - 20;
-          let disp = brick.title.toUpperCase();
-          while (disp.length > 0 && pixelTextWidth(disp) > maxTextW) {
-            disp = disp.slice(0, -1);
-          }
-          if (disp.length < brick.title.length) disp += '...';
-          drawPixelText(ctx, disp, brick.x + 8, brick.y + Math.max(4, Math.floor((brick.h - 5) / 2)), '#ffffff');
-        } else {
-          // Hit brick: cracked / open link status
-          ctx.fillStyle = 'rgba(90, 209, 205, 0.08)';
-          ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
-          ctx.strokeStyle = 'rgba(90, 209, 205, 0.45)';
-          ctx.strokeRect(brick.x + 0.5, brick.y + 0.5, brick.w - 1, brick.h - 1);
-
-          // Prompt
-          const text = `${brick.title.toUpperCase()} [ENTER/CLICK TO READ]`;
-          let disp = text;
-          while (disp.length > 0 && pixelTextWidth(disp) > brick.w - 16) {
-            disp = disp.slice(0, -1);
-          }
-          drawPixelText(ctx, disp, brick.x + 8, brick.y + Math.max(4, Math.floor((brick.h - 5) / 2)), '#5ad1cd');
-        }
-      }
+      ctx?.clearRect(0, 0, W, H);
+      if (!ctx) return;
 
       // Particles
       for (const p of particles) {
         ctx.fillStyle = p.color;
-        ctx.fillRect(Math.round(p.x), Math.round(p.y), 2, 2);
+        ctx.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
       }
 
       // Paddle
-      const paddleY = height - 22;
       ctx.fillStyle = '#5ad1cd';
-      ctx.fillRect(Math.round(paddleX), paddleY, paddleW, paddleH);
+      ctx.fillRect(Math.round(paddleX), paddleY, Math.round(paddleW), PADDLE_H);
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(Math.round(paddleX + 2), paddleY + 1, paddleW - 4, 1);
+      ctx.fillRect(Math.round(paddleX + 2), paddleY + 1, Math.round(paddleW) - 4, 1);
 
       // Ball
       ctx.fillStyle = '#f5c542';
-      ctx.fillRect(Math.round(ballX - ballR), Math.round(ballY - ballR), ballR * 2, ballR * 2);
+      ctx.fillRect(Math.round(ballX - BALL_R), Math.round(ballY - BALL_R), BALL_R * 2, BALL_R * 2);
 
-      // HUD overlay: hit count
-      const hitCount = bricks.filter((b) => b.hit).length;
-      const hud = `HITS: ${hitCount}/${bricks.length}`;
-      drawPixelText(ctx, hud, 12, 10, '#84cdfa');
+      // HUD (below the close button; drawn over the ball, arcade-style)
+      const livesTxt = `LIVES ${lives}`;
+      const bricksTxt = `BRICKS ${bricks.length - hits}/${bricks.length}`;
+      drawPixelText(ctx, livesTxt, W - 12 - pixelTextWidth(livesTxt), 46, '#84cdfa');
+      drawPixelText(ctx, bricksTxt, W - 12 - pixelTextWidth(bricksTxt), 56, '#5ad1cd');
+
+      if (attached && !ended) {
+        const t = 'SPACE / CLICK TO LAUNCH';
+        drawPixelText(ctx, t, Math.round((W - pixelTextWidth(t)) / 2), paddleY - 34, '#84cdfa');
+      }
+
+      if (ended) {
+        const big = ended === 'clear' ? 'LEVEL CLEAR' : 'GAME OVER';
+        const color = ended === 'clear' ? '#5ad1cd' : '#ed6f5c';
+        const scale = 7;
+        ctx.save();
+        ctx.scale(scale, scale);
+        drawPixelText(ctx, big, W / (2 * scale) - pixelTextWidth(big) / 2, H / (2 * scale) - 2.5, color);
+        ctx.restore();
+        const sub = 'PRESS ANY KEY OR CLICK';
+        drawPixelText(ctx, sub, Math.round((W - pixelTextWidth(sub)) / 2), Math.round(H / 2) + 24, '#84cdfa');
+      }
     };
 
     const frame = (now: number) => {
       const dt = Math.max(0, Math.min(0.05, (now - last) / 1000));
       last = now;
-      if (!reduced) step(dt);
+      step(dt);
       draw();
-      raf = visible && !document.hidden ? requestAnimationFrame(frame) : 0;
+      raf = requestAnimationFrame(frame);
     };
 
-    function start() {
-      if (raf || !visible || document.hidden) return;
-      last = performance.now();
-      raf = requestAnimationFrame(frame);
-    }
-
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        exit();
+        return;
+      }
+      if (ended) {
+        e.preventDefault();
+        exit();
+        return;
+      }
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
         leftHeld = true;
       } else if (e.key === 'ArrowRight') {
         e.preventDefault();
         rightHeld = true;
-      } else if (e.key === 'Escape') {
+      } else if (e.key === ' ' || e.code === 'Space') {
         e.preventDefault();
-        onClose();
-      } else if (e.key === 'Enter') {
-        if (selectedHitIdx !== null && articles[selectedHitIdx]) {
-          e.preventDefault();
-          router.push(articles[selectedHitIdx].href);
-        } else {
-          // If no row specifically selected, open the latest hit row
-          const hitIdxs = bricks.filter((b) => b.hit).map((b) => b.index);
-          if (hitIdxs.length > 0) {
-            const targetIdx = hitIdxs[hitIdxs.length - 1];
-            router.push(articles[targetIdx].href);
-          }
-        }
+        if (attached) launch();
       }
     };
 
@@ -365,89 +543,37 @@ export default function BreakoutMode({
     };
 
     const onPointerMove = (e: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const clientX = e.clientX - rect.left;
-      paddleX = Math.max(0, Math.min(width - paddleW, clientX - paddleW / 2));
+      if (ended) return;
+      paddleX = Math.max(2, Math.min(W - paddleW - 2, e.clientX - paddleW / 2));
     };
 
     const onPointerDown = (e: PointerEvent) => {
-      canvas.focus({ preventScroll: true });
-      const rect = canvas.getBoundingClientRect();
-      const px = e.clientX - rect.left;
-      const py = e.clientY - rect.top;
-
-      // Check if clicking a hit brick
-      for (const brick of bricks) {
-        if (brick.hit && px >= brick.x && px <= brick.x + brick.w && py >= brick.y && py <= brick.y + brick.h) {
-          router.push(brick.href);
-          return;
-        }
+      if ((e.target as Element | null)?.closest?.('[data-breakout-close]')) return;
+      if (ended) {
+        e.preventDefault();
+        exit();
+        return;
       }
-
-      if (ballAttached) ballAttached = false;
+      if (attached) launch();
     };
 
-    const observer = new IntersectionObserver(([entry]) => {
-      visible = entry?.isIntersecting ?? true;
-      if (visible) start();
-    });
-
-    const resizeObserver = new ResizeObserver(resize);
-
-    canvas.addEventListener('keydown', onKeyDown);
-    canvas.addEventListener('keyup', onKeyUp);
-    canvas.addEventListener('pointermove', onPointerMove);
-    canvas.addEventListener('pointerdown', onPointerDown);
-    observer.observe(canvas);
-    resizeObserver.observe(canvas);
-
-    resize();
-    start();
-    canvas.focus({ preventScroll: true });
-
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      canvas.removeEventListener('keydown', onKeyDown);
-      canvas.removeEventListener('keyup', onKeyUp);
-      canvas.removeEventListener('pointermove', onPointerMove);
-      canvas.removeEventListener('pointerdown', onPointerDown);
-      observer.disconnect();
-      resizeObserver.disconnect();
+    const onResize = () => {
+      exit();
     };
-  }, [articles, onClose, listElement, router, announce, selectedHitIdx]);
 
-  return (
-    <div className={styles.overlay}>
-      <div className={styles.topBar}>
-        <span className={styles.hudText}>BREAKOUT MODE &bull; [ESC] TO EXIT</span>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Exit Breakout game"
-          className={styles.closeBtn}
-        >
-          <span>ESC</span>
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
+    closeBtn.addEventListener('click', () => exit());
 
-      <canvas
-        ref={canvasRef}
-        tabIndex={0}
-        aria-label="Breakout mini-game with article bricks. Move paddle with left and right arrow keys or pointer. Click or press Enter on a hit row to open the article. Press Escape to exit."
-        className={styles.canvas}
-      />
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('resize', onResize);
+    canvas.focus();
+    announce('Breakout started. The page is the level. Move with the arrow keys or the pointer, launch with Space or a click, exit with Escape.');
+    raf = requestAnimationFrame(frame);
 
-      {/* Screen-reader accessible list of hit articles */}
-      <div className="sr-only">
-        {hitArticles.map((idx) => (
-          <a key={articles[idx].href} href={articles[idx].href}>
-            Open {articles[idx].title}
-          </a>
-        ))}
-      </div>
+    return () => teardown();
+  }, [onClose]);
 
-      <span ref={liveRef} className="sr-only" aria-live="polite" />
-    </div>
-  );
+  return null;
 }

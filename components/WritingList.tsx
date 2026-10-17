@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Reveal from './Reveal';
 import LinkArrow from './LinkArrow';
-import PixelWalker from './PixelWalker';
 import SpeechBubble from './SpeechBubble';
-import BreakoutMode from './BreakoutMode';
+import BreakoutMode, { breakoutSupported } from './BreakoutMode';
 import styles from './LinkArrow.module.css';
 import breakoutStyles from './BreakoutMode.module.css';
 
@@ -66,27 +65,53 @@ const pad = (n: number) => String(n).padStart(2, '0');
 
 export default function WritingList() {
   const [isBreakout, setIsBreakout] = useState(false);
-  const listRef = useRef<HTMLDivElement>(null);
+  // Stable so BreakoutMode's game effect doesn't restart on re-render.
+  const closeBreakout = useCallback(() => setIsBreakout(false), []);
+  const playBtnRef = useRef<HTMLButtonElement>(null);
+  const wasPlayingRef = useRef(false);
+  const startBreakout = useCallback(() => {
+    if (!breakoutSupported()) return;
+    setIsBreakout(true);
+  }, []);
 
+  // Return focus to the PLAY button when the game exits, without scrolling:
+  // plain focus() would yank the page to the button and undo the scroll
+  // restore. Deferred attempts guard against mid-restore states.
   useEffect(() => {
+    if (wasPlayingRef.current && !isBreakout) {
+      wasPlayingRef.current = false;
+      const focusBtn = () => playBtnRef.current?.focus({ preventScroll: true });
+      focusBtn();
+      requestAnimationFrame(() => {
+        if (document.activeElement !== playBtnRef.current) focusBtn();
+      });
+      setTimeout(() => {
+        if (document.activeElement !== playBtnRef.current) focusBtn();
+      }, 200);
+    }
+    if (isBreakout) wasPlayingRef.current = true;
+  }, [isBreakout]);
+
+  // Shift+B is the only hotkey; plain B must not toggle anything.
+  useEffect(() => {
+    if (isBreakout) return; // the game owns the keyboard while open
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'b' || e.key === 'B') {
-        const target = e.target as HTMLElement | null;
-        if (
-          target &&
-          (target.tagName === 'INPUT' ||
-            target.tagName === 'TEXTAREA' ||
-            target.isContentEditable)
-        ) {
-          return;
-        }
-        e.preventDefault();
-        setIsBreakout((prev) => !prev);
+      if (!e.shiftKey || (e.key !== 'B' && e.key !== 'b')) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
       }
+      e.preventDefault();
+      startBreakout();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [isBreakout, startBreakout]);
 
   return (
     <section id="writing" className="hv-section">
@@ -94,8 +119,9 @@ export default function WritingList() {
         <h2 className="hv-sec-title">Ramblings</h2>
         <div className="hv-sec-right">
           <button
+            ref={playBtnRef}
             type="button"
-            onClick={() => setIsBreakout(true)}
+            onClick={startBreakout}
             aria-label="Play Breakout with the article list"
             className={breakoutStyles.playBtn}
           >
@@ -113,15 +139,8 @@ export default function WritingList() {
         </div>
       </Reveal>
 
-      <div ref={listRef} className="hv-list hv-walk-host">
-        <PixelWalker />
-        {isBreakout && (
-          <BreakoutMode
-            articles={articles}
-            onClose={() => setIsBreakout(false)}
-            listElement={listRef.current}
-          />
-        )}
+      <div className="hv-list">
+        {isBreakout && <BreakoutMode onClose={closeBreakout} />}
         {articles.map((article, index) => (
           <Reveal key={article.href} delay={index * 0.04}>
             <Link href={article.href} className="hv-post-row group">

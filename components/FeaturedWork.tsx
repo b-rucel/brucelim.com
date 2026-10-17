@@ -50,6 +50,13 @@ export const projects = [
     href: '/lab/signal-room/index.html',
     tech: ['Concept'],
   },
+  {
+    title: 'Sort Arena',
+    description: 'Arcade cabinet where sorting algorithms race for your bet.',
+    image: '/images/lab/sort-arena.webp',
+    href: '/lab/sort-arena/index.html',
+    tech: ['Concept'],
+  },
 ];
 
 const pad = (n: number) => String(n).padStart(2, '0');
