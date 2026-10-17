@@ -48,3 +48,9 @@
         transform: translate(-50%, -50%) rotate(360deg);
     }
 }
+@media (prefers-reduced-motion: reduce) {
+    .container {
+        animation: none;
+        transform: translate(-50%, -50%);
+    }
+}

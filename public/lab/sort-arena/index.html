@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sort Arena — Concept · Lab | Bruce Lim</title>
+  <meta name="description" content="Sort Arena: sorting algorithms race on one seeded array. Pick a fighter, place a wager, trigger mid-race boosts and jams.">
+  <meta name="theme-color" content="#0b0b0d">
+  <link rel="preload" href="fonts/archivo-black-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/ibm-plex-mono-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="stage" id="stage" data-scene="select">
+    <header class="hud">
+      <div class="hud-id">
+        <a class="hud-back" href="/">← brucelim.com</a>
+        <h1 class="hud-title">Sort Arena</h1>
+        <span class="hud-kicker">Concept · Lab</span>
+      </div>
+
+      <dl class="hud-ticket" aria-label="Race ticket">
+        <div class="hud-stat">
+          <dt>Level</dt>
+          <dd id="hudLevel">LVL 1 · N=16</dd>
+        </div>
+        <div class="hud-stat">
+          <dt>Bet</dt>
+          <dd class="money" id="hudWager">100 CR</dd>
+        </div>
+        <div class="hud-stat">
+          <dt>Fighter</dt>
+          <dd id="hudFighter">Quickblade</dd>
+        </div>
+        <div class="hud-stat hud-stat-seed">
+          <dt>Seed</dt>
+          <dd id="hudSeed">#0409</dd>
+        </div>
+      </dl>
+
+      <div class="hud-bank">
+        <div class="hud-credits">
+          <span class="hud-label">Credits</span>
+          <span class="hud-credits-val money" id="hudCredits">1,000</span>
+        </div>
+        <div class="hud-streak">
+          <span class="hud-label">Streak <span id="hudMult">×1.0</span></span>
+          <span class="pips" id="hudPips" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        </div>
+      </div>
+
+      <div class="hud-tools">
+        <button class="tool-btn" id="helpBtn" type="button" aria-haspopup="dialog" aria-label="How it works">?</button>
+        <button class="tool-btn tool-sfx" id="sfxBtn" type="button" aria-pressed="false">SFX <span id="sfxState">off</span></button>
+      </div>
+    </header>
+
+    <main class="scenes" id="scenes">
+      <!-- SCENE 1: SELECT -->
+      <section class="scene scene-select" id="sceneSelect" data-state="active" aria-labelledby="selectHeading">
+        <div class="select-head">
+          <div class="select-title-group">
+            <h2 class="eyebrow" id="selectHeading">Choose your fighter</h2>
+            <div class="level-pills" role="group" aria-label="Array size level">
+              <button class="level-pill" type="button" data-level="1" aria-pressed="true">LVL 1 · N=16</button>
+              <button class="level-pill" type="button" data-level="2" aria-pressed="false">LVL 2 · N=32</button>
+              <button class="level-pill" type="button" data-level="3" aria-pressed="false">LVL 3 · N=64</button>
+            </div>
+          </div>
+          <p class="seed-line">
+            <span>Seed <strong id="seedVal">#0409</strong></span>
+            <span id="seedMode">Random shuffle</span>
+            <span id="seedInv">62 inversions</span>
+            <button class="text-btn" id="rerollBtn" type="button">Reroll <kbd>R</kbd></button>
+          </p>
+        </div>
+
+        <div class="roster" role="group" aria-label="Fighters">
+          <button class="fighter" id="fighter0" type="button" data-fighter="0" aria-pressed="true">
+            <span class="fighter-key" aria-hidden="true">1</span>
+            <span class="fighter-art"><canvas class="fighter-portrait" width="16" height="16" aria-hidden="true"></canvas></span>
+            <span class="fighter-name">Quickblade</span>
+            <span class="fighter-algo">Quick sort · Lomuto pivot</span>
+            <span class="fighter-odds"><span id="odds0">2.5</span><span class="fighter-x">×</span></span>
+            <span class="fighter-flavor">Cuts the field on a pivot and never looks back.</span>
+            <span class="fighter-est" id="est0">~72 ops expected</span>
+          </button>
+          <button class="fighter" id="fighter1" type="button" data-fighter="1" aria-pressed="false">
+            <span class="fighter-key" aria-hidden="true">2</span>
+            <span class="fighter-art"><canvas class="fighter-portrait" width="16" height="16" aria-hidden="true"></canvas></span>
+            <span class="fighter-name">Mergetitan</span>
+            <span class="fighter-algo">Merge sort · bottom-up</span>
+            <span class="fighter-odds"><span id="odds1">2.3</span><span class="fighter-x">×</span></span>
+            <span class="fighter-flavor">Same pace on any seed. Never fast, never fooled.</span>
+            <span class="fighter-est" id="est1">~76 ops expected</span>
+          </button>
+          <button class="fighter" id="fighter2" type="button" data-fighter="2" aria-pressed="false">
+            <span class="fighter-key" aria-hidden="true">3</span>
+            <span class="fighter-art"><canvas class="fighter-portrait" width="16" height="16" aria-hidden="true"></canvas></span>
+            <span class="fighter-name">Vipershift</span>
+            <span class="fighter-algo">Insertion sort · 2.25× clock</span>
+            <span class="fighter-odds"><span id="odds2">3.1</span><span class="fighter-x">×</span></span>
+            <span class="fighter-flavor">Lethal on a tidy field. Drowns in chaos.</span>
+            <span class="fighter-est" id="est2">~135 ops expected</span>
+          </button>
+          <button class="fighter" id="fighter3" type="button" data-fighter="3" data-locked="true" aria-pressed="false">
+            <span class="fighter-key" id="key3" aria-hidden="true">LOCK</span>
+            <span class="fighter-art"><canvas class="fighter-portrait" width="16" height="16" aria-hidden="true"></canvas></span>
+            <span class="fighter-name">Heapforge</span>
+            <span class="fighter-algo">Heap sort · binary sift</span>
+            <span class="fighter-odds"><span id="odds3">2.4</span><span class="fighter-x">×</span></span>
+            <span class="fighter-flavor" id="flavor3">Unlocks at 2,000 CR. Crushes worst-case traps.</span>
+            <span class="fighter-est" id="est3">Reach 2,000 CR to unlock</span>
+          </button>
+        </div>
+
+        <div class="bet-bar">
+          <div class="bet-group" role="group" aria-labelledby="wagerLabel">
+            <span class="eyebrow" id="wagerLabel">Wager</span>
+            <div class="chips">
+              <button class="chip" type="button" data-wager="50" aria-pressed="false">50</button>
+              <button class="chip" type="button" data-wager="100" aria-pressed="true">100</button>
+              <button class="chip" type="button" data-wager="250" aria-pressed="false">250</button>
+              <button class="chip" type="button" data-wager="max" aria-pressed="false">Max</button>
+            </div>
+          </div>
+          <div class="bet-group" role="group" aria-labelledby="modLabel">
+            <span class="eyebrow" id="modLabel">Seed mods</span>
+            <div class="mods">
+              <button class="mod" id="modNearly" type="button" aria-pressed="false"><span class="mod-dot" aria-hidden="true"></span>Nearly sorted <kbd>Q</kbd></button>
+              <button class="mod" id="modReverse" type="button" aria-pressed="false"><span class="mod-dot" aria-hidden="true"></span>Reverse <kbd>W</kbd></button>
+            </div>
+          </div>
+          <div class="start-wrap">
+            <p class="payout-line">Pays <span class="money" id="selectPayout">250 CR</span></p>
+            <button class="cta" id="startBtn" type="button">Start <kbd>Space</kbd></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCENE 2 (RACE) & SCENE 3 (RESULT) -->
+      <section class="scene scene-play" id="scenePlay" data-state="idle" data-mode="race" aria-labelledby="playHeading" tabindex="-1" inert>
+        <h2 class="sr-only" id="playHeading">Race</h2>
+
+        <div class="race-stage">
+          <div class="tactics" id="tacticsBar" role="group" aria-label="Mid-race tactical moves">
+            <span class="tactics-label">Mid-race moves <span class="tactics-sub" id="tacticsNote">Each move costs 40 CR &amp; trims odds −0.2×</span></span>
+            <div class="tactics-actions">
+              <button class="tactic-btn" id="boostBtn" type="button" data-state="ready">
+                <span class="tactic-name">Boost 2×</span>
+                <span class="tactic-cost money" id="boostState">40 CR</span>
+                <kbd>B</kbd>
+              </button>
+              <button class="tactic-btn" id="jamBtn" type="button" data-state="ready">
+                <span class="tactic-name">Jam rival</span>
+                <span class="tactic-cost money" id="jamState">40 CR</span>
+                <kbd>J</kbd>
+              </button>
+            </div>
+          </div>
+
+          <div class="arena" id="arena">
+            <article class="lane" id="lane0" data-lane="0" data-fighter="0" data-bet="true" data-state="run" aria-label="Lane 1">
+              <div class="lane-id">
+                <span class="lane-name" id="laneName0">Quickblade</span>
+                <span class="lane-bet">Your bet</span>
+                <span class="lane-fx" id="laneFx0"></span>
+              </div>
+              <span class="lane-pos" id="pos0" data-pos="0" data-flip="a">—</span>
+              <div class="lane-count">
+                <span class="lane-ops" id="ops0">0</span>
+                <span class="lane-unit">ops</span>
+                <span class="lane-split" id="split0">0 cmp · 0 swp</span>
+                <span class="lane-gauge" aria-label="Speed gauge">
+                  <span class="lane-rate" id="rate0">0/s</span>
+                  <span class="gauge-cells" id="gauge0" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                </span>
+              </div>
+              <div class="lane-bay"><canvas class="lane-canvas" id="canvas0" aria-hidden="true"></canvas></div>
+            </article>
+            <article class="lane" id="lane1" data-lane="1" data-fighter="1" data-bet="false" data-state="run" aria-label="Lane 2">
+              <div class="lane-id">
+                <span class="lane-name" id="laneName1">Mergetitan</span>
+                <span class="lane-bet">Your bet</span>
+                <span class="lane-fx" id="laneFx1"></span>
+              </div>
+              <span class="lane-pos" id="pos1" data-pos="0" data-flip="a">—</span>
+              <div class="lane-count">
+                <span class="lane-ops" id="ops1">0</span>
+                <span class="lane-unit">ops</span>
+                <span class="lane-split" id="split1">0 cmp · 0 swp</span>
+                <span class="lane-gauge" aria-label="Speed gauge">
+                  <span class="lane-rate" id="rate1">0/s</span>
+                  <span class="gauge-cells" id="gauge1" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                </span>
+              </div>
+              <div class="lane-bay"><canvas class="lane-canvas" id="canvas1" aria-hidden="true"></canvas></div>
+            </article>
+            <article class="lane" id="lane2" data-lane="2" data-fighter="2" data-bet="false" data-state="run" aria-label="Lane 3">
+              <div class="lane-id">
+                <span class="lane-name" id="laneName2">Vipershift</span>
+                <span class="lane-bet">Your bet</span>
+                <span class="lane-fx" id="laneFx2"></span>
+              </div>
+              <span class="lane-pos" id="pos2" data-pos="0" data-flip="a">—</span>
+              <div class="lane-count">
+                <span class="lane-ops" id="ops2">0</span>
+                <span class="lane-unit">ops</span>
+                <span class="lane-split" id="split2">0 cmp · 0 swp</span>
+                <span class="lane-gauge" aria-label="Speed gauge">
+                  <span class="lane-rate" id="rate2">0/s</span>
+                  <span class="gauge-cells" id="gauge2" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                </span>
+              </div>
+              <div class="lane-bay"><canvas class="lane-canvas" id="canvas2" aria-hidden="true"></canvas></div>
+            </article>
+          </div>
+        </div>
+
+        <aside class="result" id="resultPanel" aria-labelledby="resultHead">
+          <p class="result-kicker" id="resultKicker">Vipershift takes first</p>
+          <h2 class="result-head" id="resultHead">Win</h2>
+          <p class="result-sub" id="resultSub">Your pick finished first.</p>
+          <p class="result-money"><span class="result-payout money" id="resultPayout">+0</span> <span class="result-cr money">CR</span></p>
+          <p class="result-balance">Balance <span class="money" id="resultBalance">1,000 CR</span></p>
+          <div class="result-streak">
+            <span class="eyebrow">Streak <span id="resultMult">×1.0</span></span>
+            <span class="meter" id="resultMeter" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="result-scores">
+            <h3 class="eyebrow">High scores</h3>
+            <ol class="scores" id="scoreList"></ol>
+          </div>
+          <button class="cta" id="nextBtn" type="button">Next race <kbd>Space</kbd></button>
+        </aside>
+
+        <div class="countdown" id="countdown" data-on="false" aria-hidden="true">
+          <span class="countdown-num" id="countdownNum" data-beat="a">3</span>
+        </div>
+      </section>
+
+      <!-- SCENE 4: GAME OVER (0 Credits Continue Countdown) -->
+      <section class="scene scene-gameover" id="sceneGameOver" data-state="idle" aria-labelledby="gameOverHead" tabindex="-1" inert>
+        <div class="gameover-card">
+          <p class="eyebrow" id="gameOverKicker">Bank depleted · 0 CR remaining</p>
+          <h2 class="gameover-head" id="gameOverHead">Game Over</h2>
+          <p class="gameover-sub" id="gameOverSub">Your credit balance hit zero.</p>
+          <div class="continue-block">
+            <span class="continue-label">Continue?</span>
+            <span class="continue-num" id="continueCount">9</span>
+          </div>
+          <button class="cta" id="continueBtn" type="button">Insert Coin · 1,000 CR <kbd>Space</kbd></button>
+        </div>
+      </section>
+    </main>
+
+    <canvas class="fx" id="fxCanvas" aria-hidden="true"></canvas>
+  </div>
+
+  <dialog class="help" id="helpDialog" aria-labelledby="helpTitle">
+    <div class="help-body">
+      <h2 class="help-title" id="helpTitle">How it works</h2>
+      <p>Three sorting algorithms race on the same seeded array (`N=16`, `32`, or `64` as you level up). Each step is a compare or swap; the first lane to finish sorting wins.</p>
+      <p>Odds come from each algorithm's real expected cost on this seed's inversion count and pivot balance. During the race, spend 40 CR on <strong>Boost</strong> (2× speed for 2s) or <strong>Jam</strong> (freeze the leading rival for 1.5s) once per round; each move trims your payout multiplier by 0.2×.</p>
+      <p>Winning advances your array level (`16 → 32 → 64`) and builds your streak multiplier (`+0.25×` per win up to `2.0×`). Reaching <strong>2,000 CR</strong> unlocks the 4th fighter, <strong>Heapforge</strong> (Heap Sort).</p>
+      <ul class="help-keys">
+        <li><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> Pick fighter</li>
+        <li><kbd>Q</kbd> <kbd>W</kbd> Seed mods · <kbd>R</kbd> Reroll</li>
+        <li><kbd>B</kbd> Boost 2× · <kbd>J</kbd> Jam rival</li>
+        <li><kbd>Space</kbd> / <kbd>Enter</kbd> Start / Continue</li>
+        <li><kbd>?</kbd> Help · <kbd>Esc</kbd> Close</li>
+      </ul>
+      <div class="help-actions">
+        <button class="text-btn" id="resetBankBtn" type="button">Reset bank to 1,000 CR</button>
+        <button class="cta cta-small" id="helpClose" type="button">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <p class="sr-only" id="srLive" aria-live="polite"></p>
+  <script src="app.js"></script>
+</body>
+</html>

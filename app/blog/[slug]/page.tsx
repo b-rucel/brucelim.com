@@ -39,7 +39,14 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
             alt: post.title,
           },
         ]
-        : [],
+        : [
+          {
+            url: `${baseUrl}/images/vibing.jpg`,
+            width: 626,
+            height: 626,
+            alt: post.title,
+          },
+        ],
     },
 
     // Twitter Card tags
@@ -47,12 +54,17 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
       card: 'summary_large_image',
       title: post.title,
       description: post.description || post.title,
-      images: post.image ? [`${baseUrl}${post.image}`] : [],
+      images: post.image ? [`${baseUrl}${post.image}`] : [`${baseUrl}/images/vibing.jpg`],
     },
 
     // Keywords and authors
     keywords: post.tags?.join(', '),
     authors: post.author ? [{ name: post.author }] : [],
+
+    // Canonical
+    alternates: {
+      canonical: `/blog${post.href}`,
+    },
   };
 }
 
