@@ -1,9 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import Image from 'next/image';
 import styles from './HeroImage.module.css';
 import RunnerGame from './RunnerGame';
+import Warp1983Game from './Warp1983Game';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -16,6 +18,15 @@ const LINES = [
 
 export default function HomeHero() {
   const reduced = useReducedMotion();
+  const [isLg, setIsLg] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    setIsLg(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsLg(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   const line: Variants = {
     hidden: { y: '115%' },
@@ -27,34 +38,40 @@ export default function HomeHero() {
 
   return (
     <section className="hv-hero" id="top">
-      <div className="flex flex-col items-start gap-4 sm:gap-6">
-        <motion.h1
-          initial="hidden"
-          animate="show"
-          variants={{
-            hidden: {},
-            show: {
-              transition: {
-                staggerChildren: reduced ? 0 : 0.1,
-                delayChildren: reduced ? 0 : 0.15,
+      <div className="hv-hero-body">
+        <div className="flex flex-col items-start gap-4 sm:gap-6">
+          <motion.h1
+            initial="hidden"
+            animate="show"
+            variants={{
+              hidden: {},
+              show: {
+                transition: {
+                  staggerChildren: reduced ? 0 : 0.1,
+                  delayChildren: reduced ? 0 : 0.15,
+                },
               },
-            },
-          }}
-        >
-          {LINES.map((entry, index) => (
-            <span className="hv-hero-line" key={index}>
-              <motion.span className="hv-hero-line-inner" variants={line}>
-                {entry.text}
-                {entry.grad ? (
-                  <>
-                    {' '}
-                    <span className="hv-grad-text">{entry.grad}</span>
-                  </>
-                ) : null}
-              </motion.span>
-            </span>
-          ))}
-        </motion.h1>
+            }}
+          >
+            {LINES.map((entry, index) => (
+              <span className="hv-hero-line" key={index}>
+                <motion.span className="hv-hero-line-inner" variants={line}>
+                  {entry.text}
+                  {entry.grad ? (
+                    <>
+                      {' '}
+                      <span className="hv-grad-text">{entry.grad}</span>
+                    </>
+                  ) : null}
+                </motion.span>
+              </span>
+            ))}
+          </motion.h1>
+        </div>
+
+        <div className="hv-hero-warp-slot hidden lg:block">
+          {isLg ? <Warp1983Game /> : null}
+        </div>
       </div>
 
       <RunnerGame className="hv-runner" />
