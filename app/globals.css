@@ -332,6 +332,27 @@ body {
   padding: 92px var(--hv-pad) var(--hv-pad);
 }
 
+.hv-hero-body {
+  position: relative;
+  width: 100%;
+}
+
+.hv-hero-warp-slot {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .hv-hero-warp-slot {
+    display: block;
+    position: absolute;
+    right: 0;
+    top: clamp(0px, 1.5vh, 20px);
+    width: clamp(260px, 24vw, 360px);
+    aspect-ratio: 1;
+    z-index: 5;
+  }
+}
+
 .hv-hero h1 {
   margin: 0;
   font-size: clamp(40px, min(10.5vw, 12vh), 170px);
@@ -916,6 +937,35 @@ body {
 .hv-runner + .hv-hero-meta {
   border-top: 0;
   padding-top: 8px;
+}
+
+/* ---- retro: WARP 1983 arcade shooter ---- */
+
+.hv-warp-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: rgba(6, 6, 12, 0.72);
+  border: 1px solid var(--hv-line);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+}
+
+.hv-warp-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  cursor: pointer;
+  touch-action: none;
+  outline: none;
+}
+
+.hv-warp-canvas:focus-visible {
+  outline: 2px solid #84cdfa;
+  outline-offset: -2px;
 }
 
 .hv-pixel {
