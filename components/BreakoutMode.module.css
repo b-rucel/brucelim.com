@@ -25,15 +25,18 @@
   outline-offset: -2px;
 }
 
+/* Centered in the gap between the nav logo and its links, which are bricks now. */
 .topBar {
   position: fixed;
   top: 10px;
-  left: 12px;
-  right: 12px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 980;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  gap: 14px;
+  white-space: nowrap;
   pointer-events: none;
 }
 

@@ -7,7 +7,9 @@ import styles from './BreakoutMode.module.css';
 const BALL_R = 4;
 const PADDLE_H = 8;
 const PADDLE_Y_PAD = 22; // paddle sits this far above the bottom edge
-const HUD_TOP = 40; // the ball cannot rise above the HUD line
+// The ball bounces off the top edge itself, so the fixed nav and logo are reachable bricks.
+// The HUD sits in the empty middle of the nav bar instead of claiming a strip of its own.
+const CEILING = 0;
 const START_LIVES = 3;
 const END_BEAT_MS = 1500;
 
@@ -70,31 +72,58 @@ function collectTextNodes(node: Node, out: Text[]) {
   }
 }
 
-/** Split every text node of the clone into one span per word, in the clone only. */
-function splitWords(root: Element) {
+/**
+ * Split every text node of the clone into one span per letter, in the clone only, so the
+ * ball chips words apart. Whitespace stays plain text, so line wrapping is unchanged.
+ */
+function splitLetters(root: Element) {
   const texts: Text[] = [];
   collectTextNodes(root, texts);
   for (const node of texts) {
-    const raw = node.textContent ?? '';
     const frag = document.createDocumentFragment();
-    let i = 0;
-    while (i < raw.length) {
-      const ws = /^\s+/.exec(raw.slice(i));
-      if (ws) {
-        frag.append(document.createTextNode(ws[0]));
-        i += ws[0].length;
+    for (const part of (node.textContent ?? '').split(/(\s+)/)) {
+      if (!part) continue;
+      if (/^\s+$/.test(part)) {
+        frag.append(document.createTextNode(part));
         continue;
       }
-      const wd = /\S+/.exec(raw.slice(i));
-      const word = (wd as RegExpExecArray)[0];
-      const span = document.createElement('span');
-      span.textContent = word;
-      span.setAttribute('data-brick-word', '');
-      frag.append(span);
-      i += word.length;
+      for (const ch of Array.from(part)) {
+        // Not a <span>: page rules like `.hv-nav-link span + span` (hover-swap labels) and
+        // `.hv-mq-row span::after` (marquee separators) would restyle every letter.
+        // An undefined custom element renders inline and matches no span selector.
+        const letter = document.createElement('b-letter');
+        letter.textContent = ch;
+        letter.setAttribute('data-brick-letter', '');
+        frag.append(letter);
+      }
     }
     node.replaceWith(frag);
   }
+}
+
+/**
+ * The part of an element actually painted: its box cut down by every ancestor that clips
+ * (overflow other than visible), e.g. the nav's hover-duplicate labels sit in a clipped
+ * box and must not become invisible bricks. Ancestor styles are cached across calls.
+ */
+function paintedRect(el: Element, clipCache: Map<Element, DOMRect | null>) {
+  const r = el.getBoundingClientRect();
+  let { left, top, right, bottom } = r;
+  for (let a = el.parentElement; a && left < right && top < bottom; a = a.parentElement) {
+    if (!clipCache.has(a)) {
+      const cs = getComputedStyle(a);
+      const clips = cs.overflowX !== 'visible' || cs.overflowY !== 'visible';
+      clipCache.set(a, clips ? a.getBoundingClientRect() : null);
+    }
+    const c = clipCache.get(a);
+    if (c) {
+      left = Math.max(left, c.left);
+      top = Math.max(top, c.top);
+      right = Math.min(right, c.right);
+      bottom = Math.min(bottom, c.bottom);
+    }
+  }
+  return { left, top, right, bottom, width: right - left, height: bottom - top };
 }
 
 function brickColor(el: Element): string {
@@ -213,7 +242,7 @@ export default function BreakoutMode({ onClose }: { onClose: () => void }) {
       }
       clone.style.margin = '0';
       copyCanvasBitmaps(el, clone);
-      splitWords(clone);
+      splitLetters(clone);
       // framer-motion Reveals frozen at their pre-animation inline state
       // (opacity 0 / translate) would clone as invisible; force them settled.
       for (const node of [clone, ...clone.querySelectorAll<HTMLElement>('*')]) {
@@ -257,29 +286,30 @@ export default function BreakoutMode({ onClose }: { onClose: () => void }) {
     topBar.append(hudText, closeBtn);
     layer.appendChild(topBar);
 
-    // --- level: every visible word/button/img/svg/canvas is a brick ---
+    // --- level: every visible letter/button/img/svg/canvas is a brick ---
     const padTop = H - PADDLE_Y_PAD - 8; // keep the paddle strip clear
     const bricks: Brick[] = [];
-    const brickNodes = cloneHost.querySelectorAll<HTMLElement>('[data-brick-word], button, img, svg, canvas');
+    const clipCache = new Map<Element, DOMRect | null>();
+    const colorCache = new Map<Element, string>();
+    const brickNodes = cloneHost.querySelectorAll<HTMLElement>('[data-brick-letter], button, img, svg, canvas');
     for (const el of brickNodes) {
       const cs = getComputedStyle(el);
       if (cs.visibility === 'hidden' || cs.display === 'none' || parseFloat(cs.opacity || '1') === 0) continue;
-      const r = el.getBoundingClientRect();
+      const r = paintedRect(el, clipCache);
       if (r.width < 2 || r.height < 2) continue;
       if (r.right <= 0 || r.left >= W || r.bottom <= 0 || r.top >= H) continue;
-      // Bricks whose bottom edge is above the HUD ceiling can never be
-      // reached by the ball; leaving them in would make the level
-      // impossible to clear. They stay as scenery in the clone.
-      if (r.bottom <= HUD_TOP + BALL_R + 1) continue;
       const h = Math.min(r.height, padTop - r.top);
       if (h < 3) continue;
+      // Letters share their parent's colour; look it up once per parent.
+      const owner = el.hasAttribute('data-brick-letter') && el.parentElement ? el.parentElement : el;
+      if (!colorCache.has(owner)) colorCache.set(owner, brickColor(owner));
       bricks.push({
         x: r.left,
         y: r.top,
         w: r.width,
         h,
         el,
-        color: brickColor(el),
+        color: colorCache.get(owner)!,
         hit: false,
       });
     }
@@ -406,8 +436,8 @@ export default function BreakoutMode({ onClose }: { onClose: () => void }) {
           ballX = W - 2 - BALL_R;
           ballVx = -Math.abs(ballVx);
         }
-        if (ballY - BALL_R <= HUD_TOP) {
-          ballY = HUD_TOP + BALL_R;
+        if (ballY - BALL_R <= CEILING) {
+          ballY = CEILING + BALL_R;
           ballVy = Math.abs(ballVy);
         }
 
@@ -482,11 +512,10 @@ export default function BreakoutMode({ onClose }: { onClose: () => void }) {
       ctx.fillStyle = '#f5c542';
       ctx.fillRect(Math.round(ballX - BALL_R), Math.round(ballY - BALL_R), BALL_R * 2, BALL_R * 2);
 
-      // HUD (below the close button; drawn over the ball, arcade-style)
-      const livesTxt = `LIVES ${lives}`;
-      const bricksTxt = `BRICKS ${bricks.length - hits}/${bricks.length}`;
-      drawPixelText(ctx, livesTxt, W - 12 - pixelTextWidth(livesTxt), 46, '#84cdfa');
-      drawPixelText(ctx, bricksTxt, W - 12 - pixelTextWidth(bricksTxt), 56, '#5ad1cd');
+      // HUD under the centered title bar, in the gap between the logo and the nav links
+      // (drawn over the ball, arcade-style)
+      const hud = `LIVES ${lives}   BRICKS ${bricks.length - hits}/${bricks.length}`;
+      drawPixelText(ctx, hud, Math.round((W - pixelTextWidth(hud)) / 2), 38, '#5ad1cd');
 
       if (attached && !ended) {
         const t = 'SPACE / CLICK TO LAUNCH';
