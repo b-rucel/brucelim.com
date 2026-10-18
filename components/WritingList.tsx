@@ -20,6 +20,11 @@ const formatDate = (dateString: string) => {
 
 export const articles = [
   {
+    title: 'Arcade games in the browser: getting MAME to finally run',
+    date: '2026-10-18',
+    href: '/blog/arcade-games-in-the-browser',
+  },
+  {
     title: 'Building Ghostty on WSL: A Journey from Snap to Source',
     date: '2025-11-05',
     href: '/blog/ghostty-wsl-install',
