@@ -1,0 +1,209 @@
+---
+title: "Arcade games in the browser: getting MAME to finally run"
+description: "How a failed MAME-in-the-browser attempt turned into jamma, a build tool that runs 61 arcade games at 60 fps on current MAME: ROM sets that drift between versions, a busy-waiting throttle, and a 44 MB core shrunk to 6 MB."
+date: "2026-10-18"
+author: "Bruce Lim"
+tags: ["mame", "emulation", "webassembly", "arcade", "retro-games"]
+---
+
+# Arcade games in the browser: getting MAME to finally run
+
+![A retro arcade cabinet screen glowing inside a browser window, a starfield spiraling outward](/images/blog/arcade-games-in-the-browser/01-arcade-browser.jpg)
+
+I used to see games like Golden Axe and Gyruss in the arcade, and I wanted them on a web page.
+
+There is a 23.6 MB JavaScript file sitting in an old folder on my machine. It is a complete
+multi-arcade emulator, cross-compiled from C++ to WebAssembly. It never successfully booted a
+single game in a browser.
+
+This is the story of why that file failed, why the problem it ran into is the same problem every
+browser-emulation project hits, and how — a year later — a little build tool called **[jamma](https://github.com/b-rucel/jamma)**
+finally got sixty-one arcade games running at a steady 60 fps on a static web page, on the
+current version of MAME.
+
+## The graveyard of browser MAME
+
+Putting MAME in a browser is an old idea with a famous success story: in November 2014, the
+Internet Archive launched the Internet Arcade — "over 900 arcade machines", per Jason Scott's
+launch post, covering "most every major machine released between 1976 and 1988" — powered by
+JSMESS, a JavaScript port of MAME/MESS
+([blog.archive.org](https://blog.archive.org/2014/11/05/inviting-the-internet-over-to-play/)).
+That collection is still up and now holds 2,663 items.
+
+What's remarkable is how little the underlying recipe has changed since. MAME's own build
+documentation describes an Emscripten target — compile with `SOURCES=<driver files>`, get a
+`.js` + `.wasm`, wrap it in an HTML loader — and then points you at **The Emularity**, the same
+loader the Internet Arcade used in 2014
+([docs.mamedev.org/initialsetup/compilingmame.html](https://docs.mamedev.org/initialsetup/compilingmame.html#emscripten-javascript-and-html)).
+No official modern loader has replaced it.
+
+The mainstream alternative sidesteps MAME entirely. EmulatorJS — a web frontend for RetroArch,
+about 4,300 stars on GitHub — ships arcade games through the **FBNeo** core by default, or
+**MAME 2003** — which is MAME 0.78, from December 2003
+([emulatorjs.org/docs/systems/arcade](https://emulatorjs.org/docs/systems/arcade)).
+That's not a slight: old MAME is faster, smaller, and its frozen ROM sets are stable. But it's
+twenty-three years of emulation research on the shelf.
+
+And the hobbyist projects that did try current-ish MAME in a browser tend to stall. The best
+documented one I found, `ybootin/mamejs` (MAME 0.178, Docker-based build, 19 stars), hasn't had
+a commit since June 2017. My own attempt was built on it.
+
+## Attempt one: the 23.6 MB file that wouldn't boot
+
+In late 2025 I tried. I compiled mamejs myself — my notes from that week are just the
+sentence *"i cant get the roms to work, so i'm going to try to compile mamejs myself"* and a
+Docker command.
+
+The post-mortem found two independent failures stacked on top of each other:
+
+- The demo page hardcoded **absolute local ROM paths**, loaded with `XMLHttpRequest` — which
+  404s over HTTP and is blocked outright on `file://`.
+- The ROM zips were packs from a MAME 0.198-era set, but the core was built from MAME **0.178**.
+  MAME ROM sets are only valid for the MAME version they were built for — more on that below,
+  because it turned out to be the real story.
+
+Both were fixable. But stacked together, each fix revealed the next failure, and the project
+went back on the shelf.
+
+## Attempt two: verify first, build second
+
+The redo, in 2026, inverted the order of operations. **jamma** (named for the JAMMA edge
+connector that standardized arcade cabinet wiring) is a build tool plus a browser loader, and
+its first rule is: *don't trust a single ROM zip until you've checked it against the exact
+emulator binary you're going to ship*.
+
+MAME can dump the full requirements of any driver — every file, its expected size and CRC — and
+it tells you how it matches files inside an archive: first by name and CRC together, then by CRC
+alone anywhere in the zip, then by filename alone
+([docs.mamedev.org/usingmame/assetsearch.html](https://docs.mamedev.org/usingmame/assetsearch.html)).
+jamma's verify script follows the same idea in simplified form, against MAME 0.289's own
+manifest: a ROM counts as present if its checksum appears anywhere in the set's zip (or in its
+parent, BIOS or device zips), or if a loose file in the set's folder has the right name and
+checksum. So "verified" means *this zip loads on this build*, not "the filenames look right".
+
+The verdict on my ROM folder: of 71 sets, **60 passed, 1 passed with a warning** (a file with a
+wrong checksum — MAME loads it anyway), and **10 were dead** — `gng`, `raiden`, `cabal`,
+`commando`, `bloodbro` and friends, all missing required ROMs their version of the set simply
+never contained.
+
+## Your ROM zip is lying to you
+
+Why would a zip of, say, Ghosts 'n Goblins just not work on a modern MAME? Because a ROM set is
+not a copy of a game — it's a *snapshot of what the preservation community knows about a board
+at a point in time*.
+
+MAME's documentation is unusually honest about this
+([docs.mamedev.org/usingmame/aboutromsets.html](https://docs.mamedev.org/usingmame/aboutromsets.html)):
+early dumps missed entire chips (color PROMs); bad dumps got re-dumped later; games long
+labeled as legit turned out to be bootlegs, or the other way around; and occasional "miracle
+finds" — like the protection-chip dumps that unlock a machine's hidden behavior — get added.
+
+My favorite concrete case in the folder: **Golden Axe**. On MAME 0.289 the set wants a file
+called `315-5298.b9` — a dump of a programmable logic device (a PLS153) off the Sega System 16B
+board. Zip packs from years past never contained it, because it hadn't been dumped yet. The game ran without it on old MAME; modern MAME, which reproduces the
+*hardware*, knows what it's missing.
+
+This is exactly the trade the easy web-arcade stacks make: MAME 2003's baseline is 4,705 sets
+frozen in December 2003 — stable and fast, and forever blind to thirty more years of chip dumps,
+re-dumps and corrections.
+
+None of this is pedantry. MAME's stated purpose is preservation — "to document the hardware and
+reproduce the behavior of the hardware as faithfully as possible" — and speed is explicitly not
+the goal ([docs.mamedev.org/initialsetup/mameintro.html](https://docs.mamedev.org/initialsetup/mameintro.html)).
+Ten dead zips is what thirty years of that mission looks like from the outside.
+
+## Compiling the core
+
+With a verified set list, the build itself follows MAME's official Emscripten recipe: emsdk
+6.0.12 (MAME 0.289 builds against SDL3, which needs a recent Emscripten), `SOURCES=` with the
+driver files, out comes `.js` + `.wasm`. jamma
+pins MAME 0.289 — the current release — and builds per-*collection* cores rather than one
+monolith, because as the docs put it, a full MAME compile is too large to load into a browser at
+once. The `arcade` core compiles **47 driver files into 61 playable sets**; smaller cores cover
+Sega System 16 and the 1942/1943 Capcom games.
+
+The docs also warn — accurately — that the dependency discovery "is not automated": sometimes
+you must manually add source files, and "unresolved symbol" warnings at link time are expected
+for OpenGL-related functions. jamma keeps an `extraSources` list for exactly that case, but this
+core didn't need it. The one thing that did break the build was a compiler warning treated as an
+error, in MAME's CPU recompiler (`drcbec.cpp`), about a floating-point pragma clang ignores when
+targeting WebAssembly; `NOWERROR=1` lets the build carry on. (And yes — you need
+a real web server; `file://` will never work, which is failure #1 from attempt one all over
+again.)
+
+## Getting Golden Axe to boot
+
+![Tweezers lifting a windowed EPROM chip out of a socket on a dusty arcade circuit board](/images/blog/arcade-games-in-the-browser/02-rom-preservation-pcb.jpg)
+
+The first boot was a black canvas and a bare `CppException` in the console. MAME had found the
+game, then stopped: the `315-5298.b9` PLD dump from the last section was missing, and a missing
+required file is fatal. A wrong checksum, though, is only a warning. MAME doesn't use that chip
+to run Golden Axe, so a 235-byte placeholder file with the right name got past the check, with a
+"WRONG CHECKSUMS" note in the log.
+
+The second boot crashed on `glShadeModel`. MAME's default OpenGL renderer calls desktop GL
+functions that WebGL doesn't have; switching to its bgfx renderer (`-video bgfx`) fixed it, and
+Golden Axe's FBI warning screen appeared. One more surprise: MAME's own JavaScript bindings for
+mute, the FPS display and reset are created before the WebAssembly finishes loading, so most of
+them came out `undefined`. jamma rebinds them once the runtime is ready.
+
+## 60 fps without the busy-wait
+
+![A smooth, evenly repeating green oscilloscope waveform on a CRT, a joystick silhouette in the foreground](/images/blog/arcade-games-in-the-browser/03-sixty-fps-pacing.jpg)
+
+Once games booted, Gyruss ran *badly*, hovering around 49.7 fps. The culprit was
+MAME's own throttle: to hit its target frame rate it busy-waits, burning roughly a third of each
+16.7 ms frame doing nothing (Golden Axe: 15.8 ms per frame with it on).
+
+The fix sounds wrong and works beautifully: run MAME with throttling **off** (`-nothrottle`) and
+pace it from JavaScript instead. In the browser, each pass of MAME's main loop emulates exactly
+1/60 s and runs on `requestAnimationFrame`. jamma hooks Emscripten's `MainLoop.preMainLoop` and
+skips passes that arrive early, so a 120 Hz display doesn't run the game twice as fast.
+Gyruss: a steady 60 fps, 9.2 ms per frame. Golden Axe: 10.9 ms. The trade-off found in testing:
+MAME's `-autoframeskip` only works when its throttle is on, so that's off the table — the
+JavaScript pacer *is* the frame limiter now.
+
+## Shipping 44 MB
+
+One `arcade.wasm`: 44,355,473 bytes. Too heavy for a casual click. Brotli-compressed per-build
+it drops to **6.2 MB** (8.3 MB gzip for plain-HTTP LAN serving), served with `Content-Encoding`
+and an ETag → 304 dance. That's the difference between "I'll download it later" and "oh, it
+just loaded".
+
+## The honest benchmark epilogue
+
+The obvious next question: compile-time flags. WASM SIMD (`-msimd128`)? Link-time `-O3`
+(jamma's README notes MAME caps the emcc link at `-O2`)? Both built; 5 games × 3 cores × 2
+runs measured. The result: **no net gain**. Gyruss got 11% (and with `-O3`, 21%) faster; Golden
+Axe got *slower* by 18% and 10%; everything else shuffled within noise; the average moved 0% /
+−1%. Both experiments went in the bin. On a browser port of an accuracy-first emulator, the
+algorithmic hot spots don't care about your flags — which, given MAME's stated priorities, feels
+about right.
+
+## Sixty-one games
+
+The example page now boots any of the 61 verified sets from a dropdown, with gamepads,
+fullscreen, and the MAME internal menu a keypress away (the loader also exposes save states for
+apps built on it). The controller's Back button drops a coin and Start starts the game, exactly
+like the cabinet wanted.
+
+And the games themselves are a decent argument for doing this on current MAME. Of the six I
+tested most, three share an author: **Yoshiki Okamoto** designed Konami's *Gyruss* (March 1983 —
+the tube shooter set to a Bach Toccata and Fugue, an early arcade game with stereo sound), was
+fired over pay disputes, joined Capcom, designed *1942*, and worked on *Forgotten Worlds*
+(May 1988 — the first game on the CP System, CPS-1) before producing *Street Fighter II*. Around
+them: Namco's *Xevious* (January 1983 in Japan; Atari famously advertised it in North America as
+"the Atari game you can't play at home" — one of the first games with a boss fight), Sega's
+*Golden Axe* (1989, System 16B), and Video System's *Aero Fighters* (1992, *Sonic Wings* in
+Japan, whose designer Shin Nakamura left to found Psikyo).
+
+I used to see these games in the arcade. Now they boot from a dropdown on a web page, on the
+current MAME, at full speed.
+
+---
+
+*Sources: the links throughout this post. [jamma's README](https://github.com/b-rucel/jamma#readme) documents the exact
+flags and numbers; ROM status is reproducible with `mame -listxml` and any zip CRC tool. MAME is
+GPL-2.0-or-later; it ships no game ROMs — a handful are freely redistributable via
+[mamedev.org/roms](https://www.mamedev.org/roms/), and the Internet Archive removes titles on
+rightsholder request.*
