@@ -20,6 +20,11 @@ const formatDate = (dateString: string) => {
 
 export const articles = [
   {
+    title: 'Ecto: An Agent Control Plane Built on Ghostty',
+    date: '2026-11-07',
+    href: '/blog/ecto-agent-control-plane-ghostty',
+  },
+  {
     title: 'Arcade games in the browser: getting MAME to finally run',
     date: '2026-10-18',
     href: '/blog/arcade-games-in-the-browser',
