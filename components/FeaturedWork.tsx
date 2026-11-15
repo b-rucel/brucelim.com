@@ -9,6 +9,13 @@ import BugSquash, { BugScoreBadge } from './BugSquash';
 
 export const projects = [
   {
+    title: 'Ecto',
+    description: 'A native terminal workspace for running coding agents side by side.',
+    image: '/images/blog/ecto-agent-control-plane-ghostty/ecto.png',
+    href: '/ecto',
+    tech: ['Rust', 'GPUI', 'Terminal'],
+  },
+  {
     title: 'Prompt Genius',
     description: 'Explore curated collections of prompts for ChatGPT, Midjourney, and more.',
     image: '/images/featured/promptgenius.webp',

@@ -3,6 +3,7 @@ title: "Ecto: An Agent Control Plane Built on Ghostty"
 description: "How Ecto keeps Ghostty's libghostty-vt engine and builds an agent control plane around it: a native workspace where coding agents run side by side and can see, read and message each other's panes."
 date: "2026-11-07"
 author: "Bruce Lim"
+image: "/images/ecto/generated/ecto-workspace-hero.webp"
 tags: ["ghostty", "terminal", "agents", "rust", "development-tools"]
 ---
 
@@ -26,7 +27,7 @@ The name is a nod to Ghostty. Ecto is short for ectoplasm, the stuff ghosts are 
 
 Ecto is a native workspace for macOS, with Linux and Windows as previews. Panes, tabs and windows hold shells and coding agents side by side. Panes split horizontally or vertically, tabs group them, and windows separate projects. Each pane can run a shell or an agent. A pane carries its working directory, its process and, when it is an agent, the identity of that agent. The tab bar and sidebar show the same names, so the model is consistent whether I am looking at the layout or at a list.
 
-Sessions are saved and restored, including each agent's own conversation. When I quit and reopen, the layout comes back, the working directories come back, and each agent resumes its conversation. I do not have to reconstruct the room. A project keeps its shape between sessions: the agent that was reviewing yesterday is still the reviewer, in the same place, with the same conversation.
+When I quit and reopen, Ecto restores the layout, working directories and terminal scrollback. It also tries to resume agent conversations through each harness's own session support. Current integrations include Claude Code, Codex, opencode, Gemini CLI, Amp, Cursor Agent, GitHub Copilot, Grok, pi, oh-my-pi and Kimi. Conversation resume depends on the harness and whether Ecto can identify the saved session, while scrollback and conversation history help me pick up where I left off. I spend less time reconstructing the workspace before getting back to work.
 
 Agents can see, read and message each other's panes. Ecto identifies which agent is running in each pane, so a pane carries the agent's name. The workspace is local: it runs on my machine, against my files, with my shells and my agent installations.
 
@@ -44,11 +45,17 @@ Running several agents at once creates a supervision problem. At any moment I ne
 
 A morning looks like this: one agent is halfway through a refactor, one is blocked waiting for a decision, one has finished and is sitting at its prompt, and one is running a test suite. I need to find the blocked one, read the finished one's summary, and leave the test run alone. In a normal terminal that means clicking through tabs and reconstructing each conversation from scrollback.
 
-The control plane is the part of Ecto that answers those questions and lets me act on them. I can list the panes, read what an agent has printed, send a prompt or a keystroke, address a pane by name or direction, and keep the session oriented around the work. The same surface is available to the agents themselves, so one agent can look at another agent's pane when I ask it to. I decide when that happens.
+The control plane is the part of Ecto that answers those questions and lets me act on them. I can list the panes, read what an agent has printed, send a prompt or a keystroke, address a pane by name or direction, and keep the session oriented around the work. The same controls are available to the agents, so I can ask one to inspect another's pane or send it a prompt.
 
-The best example is this article. Claude ran in one Ecto pane and opencode in the pane next to it. Claude read opencode's draft plan straight from its pane, sent back corrections, switched it into build mode and handed it the writing task. I made the decisions and never copied text between them.
+This article went through the same workflow. Claude ran in one Ecto pane and opencode in the pane next to it. Claude read opencode's draft plan straight from its pane, sent back corrections, switched it into build mode and handed it the writing task. I never had to copy text between them.
 
-Nothing happens unless I ask for it. When I tell Claude to check on opencode, it finds the pane by name, reads what's there and reports back. When I say send it, the text lands in opencode's prompt as if I had typed it. The agents do the relaying, and I keep the decisions.
+<div className="flex justify-center items-center my-12">
+  <img
+    src="/images/ecto/generated/ecto-directed-workflow.webp"
+    alt="Illustration of one person at a keyboard directing three agent panes"
+    className="mx-auto"
+  />
+</div>
 
 ## What Ghostty provides
 
@@ -58,16 +65,7 @@ Using it meant I started from a terminal I already trusted. The agents I run all
 
 [libghostty 1.0 was announced](https://mitchellh.com/writing/libghostty-1-0) on Nov 6. Until then the library made no promise of stability, so every upgrade could mean changes on my side. 1.0 changes that with a stable interface and its own release cycle, separate from the Ghostty app. For anyone building on it, that's the point where it becomes a dependable foundation.
 
-## What the control plane had to build
-
-The app around it is Rust on GPUI, the framework Zed is built with. It draws on the GPU and only when something changes, which is why Ecto stays quiet with a lot of agents open. When the window is in the background, Ecto lets macOS put it to sleep, so a workspace full of idle agents doesn't keep the laptop busy.
-
-| The engine | Ecto |
-|---|---|
-| Terminal parsing and screen state | GPU rendering |
-| Kitty keyboard and graphics | Tabs, splits, windows, session restore |
-| Scrollback | Pane control and agent identity |
-| | Settings, themes, packaging |
+Ecto builds the workspace around that engine in Rust on GPUI, the framework Zed is built with. It adds GPU rendering, tabs, splits, windows, session restore, settings and themes, along with agent identity and the controls for reading and messaging panes. It avoids unnecessary redraws, keeping the terminal's resource use low when the workspace is idle.
 
 ## How it was built
 
@@ -75,14 +73,36 @@ Ecto didn't start from a blank page. Pebrel had agents sending commands to other
 
 I tried a lot of model and harness combinations along the way. Right now my lineup is Claude Opus 5.5 in Claude Code, Codex on GPT-6.1 Sol, opencode on DeepSeek V4.1 Flash 1017, and Antigravity on Gemini 3.8 Flash.
 
-Claude and Codex trade off as the lead. Whichever one leads talks with me, writes the specs and reviews what comes back, and the other picks up heavy jobs like release engineering or the Windows port. Opus usually has the edge, but every model has bad days, so nothing goes in without a review. opencode on DeepSeek handles most of the volume: searches, digging through history, and edits written from a spec. Antigravity audits the others' work without being able to change anything.
+Claude and Codex trade off as the lead. Whichever one leads talks with me, writes the specs and reviews what comes back, and the other picks up heavy jobs like release engineering or the Windows port. Opus usually has the edge, but every model has bad days, so nothing goes in without a review. opencode on DeepSeek handles most of the volume: searches, digging through history, and edits written from a spec. Antigravity mostly audits the others' work, and it also takes the occasional implementation task and runs the Linux and Windows builds.
 
 Most work follows the same loop. The lead writes a spec, I approve it, and it goes to the opencode pane. The result gets an independent audit, and the lead decides what to fix and what to send back.
 
+<div className="flex justify-center items-center my-12">
+  <img
+    src="/images/ecto/generated/ecto-agent-handoff-loop.webp"
+    alt="Ecto workflow: the lead agent writes a spec, I approve it, an implementation agent builds it, an independent auditor reviews it, and the lead and I review findings, sending fixes back when needed."
+    width={1536}
+    height={1024}
+    loading="lazy"
+    decoding="async"
+    className="mx-auto h-auto max-w-full"
+  />
+</div>
+
 The lineup will keep changing, and Ecto is meant to make swapping harnesses easy. Next I want to bring in herdr and jcode, since both have swarm features that would sit well on top of Ecto's panes.
+
+## Building it while using it
+
+The work has gone well beyond getting several agents into a window. Across the early releases we added settings, session restore, agent conversation resume, runtime diagnostics and Linux and Windows previews. Moving to libghostty-vt 1.0 meant updating the integration and comparing terminal behavior against the old version. Codex ran baseline comparisons and audited the migration, with fixes and further checks following the findings.
+
+Much of that work is hard to show in a screenshot. A prompt sent by another agent needs to use the terminal's keyboard modes correctly. A restored pane needs to find the right conversation. Recovery needs to handle an unreadable snapshot without overwriting it. These details decide whether I can trust the workspace enough to leave a project in it overnight.
+
+Agent status is a more visible example. With several agents open, I wanted to see which one was working, waiting or finished without opening each pane. Claude compared Ecto with other agent terminals and wrote the spec, opencode built it, and Codex audited each round. The first audit found that a bell in a background tab could lose its attention dot when the agent's own status took over, and the second found that a failed pane could hide its bell. Each finding went back to opencode as a small fix-up. Now each pane header, tab and sidebar row shows a distinct shape for working, waiting, needs attention, finished and failed.
+
+As Ecto's pane controls improved, the agents used those controls to do more of Ecto's development. One could read an implementation summary, send an audit task to another pane and bring the findings back to me. I still chose the work and tested the app, but less of my time went into copying messages between tools.
 
 ## Where it is now
 
-Ecto is at [0.0.11], running on libghostty 1.0. The macOS build is the one I use every day, and Linux and Windows are previews you can try. Alpha builds for all three are on the [download page](…). The core of Ecto will stay free, and I'm working on a paid edition with extra features on top.
+Ecto is the workspace I use every day on macOS, with Linux and Windows available as previews. Downloads are on the [Ecto page](/ecto). The core of Ecto will stay free, and I'm working on a paid edition with extra features on top.
 
-The work from here is the workspace itself: the part that lets agents and harnesses work together without me relaying messages between panes. That's what I wanted when I started, and it's what I use every day.
+From here, development will be in small increments as needs show up while I use it every day. Better coordination between agents and harnesses is still part of the direction, but the immediate work comes from using the app: noticing something missing, describing it to an agent, reviewing the result and trying it in the workspace where it was built.

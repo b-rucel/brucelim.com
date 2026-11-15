@@ -21,6 +21,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${baseUrl}/blog`,
       lastModified: new Date().toISOString().split('T')[0],
     },
+    {
+      url: `${baseUrl}/ecto`,
+      lastModified: '2026-11-14',
+    },
     ...blogPosts,
   ];
 }
