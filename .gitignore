@@ -42,3 +42,7 @@ next-env.d.ts
 
 # user
 docs
+
+# The Ecto getting-started route is application source.
+!/app/ecto/docs/
+!/public/images/ecto/docs/

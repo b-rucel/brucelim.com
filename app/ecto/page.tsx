@@ -174,6 +174,10 @@ export default function EctoPage() {
                     </span>
                     <span className="border-l border-[rgba(4,32,28,0.25)] pl-4 text-[18px] leading-none" aria-hidden="true">↓</span>
                   </a>
+                  <Link className={secondaryCtaClass} href="/ecto/docs">
+                    Getting started
+                    <span className={ctaArrowClass} aria-hidden="true">→</span>
+                  </Link>
                 </div>
 
               </div>
@@ -402,14 +406,14 @@ export default function EctoPage() {
                   <li className={featureListItemClass}>
                     <strong className="block text-[14px] font-semibold text-[rgba(255,255,255,0.9)]">Native terminal</strong>
                     <span className="mt-1 block text-[13px] leading-[1.55] text-[rgba(255,255,255,0.5)]">
-                      Rust and GPUI with libghostty-vt 1.0: tabs, splits, windows,
-                      themes, a command palette and SSH, with idle CPU near zero.
+                      Rust and GPUI with libghostty-vt 1.0: tabs, splits, pane zoom,
+                      themes, terminal search, a command palette and SSH.
                     </span>
                   </li>
                   <li className={featureListItemClass}>
                     <strong className="block text-[14px] font-semibold text-[rgba(255,255,255,0.9)]">Session restore</strong>
                     <span className="mt-1 block text-[13px] leading-[1.55] text-[rgba(255,255,255,0.5)]">
-                      Restore the layout, working directories and terminal
+                      Restore windows, tabs, splits, names and terminal
                       scrollback. Ecto also tries to resume agent conversations;
                       support depends on the harness and saved session.
                     </span>
@@ -417,8 +421,8 @@ export default function EctoPage() {
                   <li className={featureListItemClass}>
                     <strong className="block text-[14px] font-semibold text-[rgba(255,255,255,0.9)]">Pane control</strong>
                     <span className="mt-1 block text-[13px] leading-[1.55] text-[rgba(255,255,255,0.5)]">
-                      Named panes, agent identity, and a CLI/MCP surface to list,
-                      read and send. Agents can use it when you direct them.
+                      Named panes, agent identity, and a CLI/MCP surface to inspect,
+                      read, split, open tabs and send input. Agents can use it when you direct them.
                     </span>
                   </li>
                   <li className={featureListItemClass}>

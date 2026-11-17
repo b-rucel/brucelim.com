@@ -15,7 +15,7 @@ For most of this year I worked with one coding agent at a time, mostly opencode.
 
 Using several agents started with [PromptGenius](https://promptgenius.net), where I write guides for coding tools. To write about each one I had to actually use it, so the list kept growing: opencode and Claude Code first, then Antigravity, pi, and later oh-my-pi and Codex. Most of it was experimentation: installing each one, connecting model providers, seeing how it handled sessions and context, and writing up what worked.
 
-As I started running more of them at the same time, I wanted more from the terminal itself. I tried herdr, a terminal multiplexer built for agents, with tabs and panes that one agent can drive from another. From an opencode session I had it start Codex in one herdr tab, pi in another and jcode in a third, all pointed at my PromptGenius project, then had the three tabs discuss the same to-do list. I was comparing control planes to write about for PromptGenius, and it showed both the promise and the risk: one coordinating prompt went out as "update the tasks", the agents started editing real files during what was meant to be a test, and I spent a good part of the session reverting their changes.
+As I started running more of them at the same time, I wanted more from the terminal itself. I tried herdr, a terminal multiplexer built for agents, with tabs and panes that one agent can drive from another. From an opencode session I had it start Codex in one herdr tab, pi in another and jcode in a third, all pointed at my PromptGenius project, then had the three tabs discuss the same to-do list. I was comparing control planes to write about for PromptGenius.
 
 I also tried subagent workflows inside a single tool. I set up opencode as the driver, with GPT-6.1 Sol as the main model planning and reviewing, and subagents on GPT-6 Luna, GLM 5.3 Flash and DeepSeek V4.1 Flash doing the heavier work. It worked, but it felt clunky. Asking it to count the to-do files across my projects took DeepSeek about 80 seconds and Luna about 40, and both came back with the wrong number; the main model only got the right number by searching directly. Every setup had its own way of starting agents, picking models and passing context, and none of them gave me panes that could read each other and agents that could share context, on top of a terminal that behaved like the one I used every day.
 
@@ -37,6 +37,10 @@ Agents can see, read and message each other's panes. Ecto identifies which agent
     alt="Ecto with Claude Code, Codex and opencode running side by side in separate panes"
     className="mx-auto"
   />
+</div>
+
+<div className="my-8 flex justify-center">
+  <a href="/ecto#downloads" className="ecto-download-cta">Download Ecto <span aria-hidden="true">→</span></a>
 </div>
 
 ## Why a control plane
@@ -106,3 +110,7 @@ As Ecto's pane controls improved, the agents used those controls to do more of E
 Ecto is the workspace I use every day on macOS, with Linux and Windows available as previews. Downloads are on the [Ecto page](/ecto). The core of Ecto will stay free, and I'm working on a paid edition with extra features on top.
 
 From here, development will be in small increments as needs show up while I use it every day. Better coordination between agents and harnesses is still part of the direction, but the immediate work comes from using the app: noticing something missing, describing it to an agent, reviewing the result and trying it in the workspace where it was built.
+
+<div className="my-8 flex justify-center">
+  <a href="/ecto#downloads" className="ecto-download-cta">Download Ecto <span aria-hidden="true">→</span></a>
+</div>

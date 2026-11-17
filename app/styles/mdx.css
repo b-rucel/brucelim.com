@@ -58,6 +58,28 @@
   color: var(--color-primary-foreground);
 }
 
+.mdx-content a.ecto-download-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #5eead4;
+  color: #04201c;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mdx-content a.ecto-download-cta:hover {
+  background: #99f6e4;
+  color: #04201c;
+}
+
+.mdx-content a.ecto-download-cta:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+}
+
 .mdx-content pre {
   background: rgba(210, 180, 180, 0.1);
   /* padding: 1.25rem 1rem; */
